@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CECANI Latinoamérica | Portal de Certificación y Emisión Digital</title>
+    <meta name="description" content="Portal oficial de CECANI Latinoamérica para la administración de cursos, inscripción, pago seguro vía Stripe y emisión automatizada de diplomas en PDF.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome / Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Background Animated Gradients -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <!-- Header / Navbar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="brand" onclick="window.location.href='index.html'" style="cursor:pointer;" title="Volver a Inicio / Panel de Administración">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-title">CECANI</span>
+                    <span class="brand-subtitle">LATINOAMÉRICA</span>
+                </div>
+            </div>
+            <div class="nav-badges">
+                <span class="badge badge-gold hide-mobile" id="nav-mode-badge"><i class="fa-solid fa-sliders"></i> Modo Administración</span>
+                <button id="btn-config" class="btn-icon" title="Configuración de API Stripe y Coordenadas PDF" onclick="openModal('config-modal')">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container">
+        
+        <!-- VISTA 1: PANEL DE ADMINISTRACIÓN / CREADOR DE ENLACES (Por defecto si no hay parámetros en URL) -->
+        <section id="view-admin" class="view-section active">
+            <div class="section-header">
+                <span class="admin-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> Panel para Organizadores e Instructores</span>
+                <h1>Crear Enlace de Pago y Certificación</h1>
+                <p>Configura los datos de tu webinar, curso o diplomado. Al compartir el enlace generado, tus alumnos entrarán directo a pagar y su diploma oficial se emitirá con la información exacta que definas aquí.</p>
+            </div>
+
+            <div class="admin-card-main">
+                <form id="admin-link-form" onsubmit="generateCustomLink(event)">
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="admin-course-type">Modalidad y Tarifa de Pago <span class="req">*</span></label>
+                            <select id="admin-course-type" class="input-lg" onchange="updateAdminDefaults()">
+                                <option value="webinar" selected>Constancia de Webinar ($199 MXN)</option>
+                                <option value="ac">Diplomado / Curso A.C. ($299 MXN)</option>
+                            </select>
+                        </div>
+                        <div class="form-group half">
+                            <label for="admin-course-title">Nombre del Curso o Webinar en el Diploma <span class="req">*</span></label>
+                            <input type="text" id="admin-course-title" class="input-lg" value="Webinar Especializado de Actualización Profesional" required placeholder="Ej. Webinar Especializado en Reformas Fiscales">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="admin-course-duration">Duración u Horas Curriculares <span class="req">*</span></label>
+                            <input type="text" id="admin-course-duration" class="input-md" value="5 horas de capacitación intensiva" required placeholder="Ej. Con 10 horas de duración">
+                        </div>
+                        <div class="form-group half">
+                            <label for="admin-course-dates">Fecha o Período de Realización <span class="req">*</span></label>
+                            <input type="text" id="admin-course-dates" class="input-md" value="Agosto 2026" required placeholder="Ej. llevado a cabo el 15 de Agosto 2026">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="admin-stripe-link">Opcional: URL de Stripe Payment Link Real (Para cobros en producción)</label>
+                        <div class="input-with-icon">
+                            <i class="fa-brands fa-stripe" style="color:#6366f1; font-size:1.2rem;"></i>
+                            <input type="text" id="admin-stripe-link" class="input-md" placeholder="https://buy.stripe.com/... (Dejar vacío para usar modo simulación segura)">
+                        </div>
+                        <small class="field-help">Si pegas aquí un link de Stripe, los alumnos serán redirigidos a la pasarela oficial. Si lo dejas vacío, usarán la pasarela de simulación en pantalla.</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-gold btn-xl btn-select">
+                        <i class="fa-solid fa-link"></i> Generar Enlace para Alumnos
+                    </button>
+                </form>
+
+                <!-- Resultado: Enlace Generado -->
+                <div id="admin-generated-box" class="admin-generated-box" style="display: none;">
+                    <hr class="summary-divider">
+                    <div class="generated-header">
+                        <div class="icon-pulse"><i class="fa-solid fa-circle-check"></i></div>
+                        <div>
+                            <h4>¡Enlace de Alumno Listo para Compartir!</h4>
+                            <p>Copia y envía este enlace por WhatsApp, correo o redes sociales. Tus alumnos entrarán directo al pago y registro del diploma:</p>
+                        </div>
+                    </div>
+
+                    <div class="copy-link-wrapper">
+                        <input type="text" id="admin-output-url" readonly class="input-lg url-input">
+                        <button class="btn btn-primary btn-copy" onclick="copyToClipboard('admin-output-url', this)">
+                            <i class="fa-regular fa-copy"></i> Copiar
+                        </button>
+                    </div>
+
+                    <div class="admin-link-actions">
+                        <button type="button" class="btn btn-secondary" onclick="testGeneratedLink()">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Probar Enlace como Alumno Ahora
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA 2: FLUJO DIRECTO DEL ALUMNO (Se activa en cuanto la URL tiene ?curso=... o ?titulo=...) -->
+        <section id="view-student" class="view-section">
+            
+            <!-- Progress Stepper Simplificado (Solo 2 Pasos para el Alumno) -->
+            <div class="stepper-container student-stepper">
+                <div class="step-item active" id="student-step-indicator-1">
+                    <div class="step-circle">1</div>
+                    <div class="step-label">
+                        <span>Paso 1</span>
+                        <strong>Pago y Registro</strong>
+                    </div>
+                </div>
+                <div class="step-line"></div>
+                <div class="step-item" id="student-step-indicator-2">
+                    <div class="step-circle">2</div>
+                    <div class="step-label">
+                        <span>Paso 2</span>
+                        <strong>Diploma y Envío</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 1 DEL ALUMNO: PAGO SEGURO Y REGISTRO DE DATOS -->
+            <div id="student-step-1" class="student-subview active">
+                <div class="checkout-container">
+                    
+                    <!-- Resumen del Curso Preconfigurado -->
+                    <div class="checkout-summary">
+                        <h3>Resumen de Certificación</h3>
+                        <div class="summary-card">
+                            <div class="summary-header">
+                                <div class="summary-title" id="student-course-title">Webinar de Actualización</div>
+                                <span class="summary-price" id="student-course-price">$199 MXN</span>
+                            </div>
+                            <p id="student-course-desc" class="summary-desc">Emisión de constancia oficial digital en PDF de alta resolución con valor curricular y sello de autenticidad.</p>
+                            
+                            <div class="summary-meta">
+                                <div class="meta-item"><i class="fa-regular fa-clock"></i> <span id="student-duration">5 horas de capacitación</span></div>
+                                <div class="meta-item"><i class="fa-regular fa-calendar-days"></i> <span id="student-dates">Agosto 2026</span></div>
+                            </div>
+
+                            <hr class="summary-divider">
+                            <div class="summary-row">
+                                <span>Subtotal:</span>
+                                <span id="student-subtotal">$199.00 MXN</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Emisión PDF y Envío a Correo:</span>
+                                <span style="color:#10b981; font-weight:600;">INCLUIDO</span>
+                            </div>
+                            <hr class="summary-divider">
+                            <div class="summary-row total">
+                                <span>Total a Pagar:</span>
+                                <span id="student-total" class="total-amount">$199.00 MXN</span>
+                            </div>
+                            <div class="stripe-badge-secure">
+                                <i class="fa-solid fa-lock"></i> Pago encriptado de extremo a extremo por <strong>Stripe</strong>
+                            </div>
+                        </div>
+
+                        <div class="admin-return-link" onclick="window.location.href='index.html'">
+                            <i class="fa-solid fa-arrow-left"></i> Volver al Portal de Administración
+                        </div>
+                    </div>
+
+                    <!-- Formulario de Alumno y Pago -->
+                    <div class="checkout-form-wrapper">
+                        <div class="form-header">
+                            <h2>Inscripción y Pago</h2>
+                            <div class="card-icons">
+                                <i class="fa-brands fa-cc-visa"></i>
+                                <i class="fa-brands fa-cc-mastercard"></i>
+                                <i class="fa-brands fa-cc-amex"></i>
+                                <i class="fa-brands fa-stripe"></i>
+                            </div>
+                        </div>
+
+                        <!-- Indicador de Modo -->
+                        <div class="mode-indicator" id="payment-mode-indicator">
+                            <span class="status-dot green"></span>
+                            <span>Modo Simulación Activo (Prueba con cualquier tarjeta)</span>
+                        </div>
+
+                        <form id="stripe-payment-form" onsubmit="handlePaymentSubmit(event)">
+                            <h4 class="form-section-title"><i class="fa-regular fa-id-card"></i> 1. Información para tu Diploma y Envío</h4>
+                            
+                            <div class="form-group">
+                                <label for="card-holder">Nombre Completo del Alumno (Como aparecerá en el Diploma) <span class="req">*</span></label>
+                                <div class="input-with-icon">
+                                    <i class="fa-regular fa-user"></i>
+                                    <input type="text" id="card-holder" placeholder="Ej. CYNTHIA ANGELICA RODRIGUEZ ESCARCEGA" required autocomplete="name" class="input-highlight">
+                                </div>
+                                <small class="field-help">Se imprimirá automáticamente en mayúsculas y tipografia oficial de CECANI.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="billing-email">Correo Electrónico (Para envío del PDF y recibo fiscal) <span class="req">*</span></label>
+                                <div class="input-with-icon">
+                                    <i class="fa-regular fa-envelope"></i>
+                                    <input type="email" id="billing-email" placeholder="alumno@correo.com" required autocomplete="email" class="input-highlight">
+                                </div>
+                                <small class="field-help">Aquí te llegará tu diploma oficial en PDF de manera instantánea.</small>
+                            </div>
+
+                            <h4 class="form-section-title" style="margin-top: 1.5rem;"><i class="fa-regular fa-credit-card"></i> 2. Método de Pago (Stripe Elements)</h4>
+                            <div class="form-group">
+                                <label for="card-number">Número de Tarjeta</label>
+                                <div class="input-with-icon">
+                                    <i class="fa-regular fa-credit-card"></i>
+                                    <input type="text" id="card-number" placeholder="4242 •••• •••• 4242" maxlength="19" required autocomplete="cc-number">
+                                    <span class="card-type-icon" id="card-brand-icon"><i class="fa-solid fa-credit-card"></i></span>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group half">
+                                    <label for="card-expiry">Expiración (MM/AA)</label>
+                                    <div class="input-with-icon">
+                                        <i class="fa-regular fa-calendar"></i>
+                                        <input type="text" id="card-expiry" placeholder="12/28" maxlength="5" required autocomplete="cc-exp">
+                                    </div>
+                                </div>
+                                <div class="form-group half">
+                                    <label for="card-cvc">CVC / CVV</label>
+                                    <div class="input-with-icon">
+                                        <i class="fa-solid fa-lock"></i>
+                                        <input type="password" id="card-cvc" placeholder="342" maxlength="4" required autocomplete="cc-csc">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-pay" id="btn-submit-payment">
+                                <i class="fa-solid fa-lock"></i>
+                                <span id="btn-pay-text">Pagar $199 MXN y Emitir Diploma</span>
+                            </button>
+                        </form>
+
+                        <div class="security-note">
+                            <i class="fa-solid fa-shield-halved"></i> Al confirmar, se procesará el cobro e instantáneamente se generará tu constancia original para descarga y envío por correo.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 2 DEL ALUMNO: EMISIóN PDF Y ENVÍO A CORREO -->
+            <div id="student-step-2" class="student-subview">
+                <div class="success-banner">
+                    <div class="success-icon">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div class="success-text">
+                        <h3>¡Pago Confirmado y Diploma Emitido!</h3>
+                        <p>Transacción <strong id="tx-id">TX-9842103</strong> verificada. Tu documento oficial se ha generado correctamente.</p>
+                    </div>
+                    <div class="success-actions">
+                        <button class="btn btn-gold btn-md" onclick="downloadDiploma()">
+                            <i class="fa-solid fa-file-arrow-down"></i> Descargar PDF Ahora
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TARJETA DE CONFIRMACIÓN DE ENVÍO POR CORREO -->
+                <div class="email-delivery-card">
+                    <div class="email-delivery-icon">
+                        <i class="fa-solid fa-envelope-circle-check"></i>
+                    </div>
+                    <div class="email-delivery-info">
+                        <h4>Copia Oficial Enviada a tu Correo Electrónico</h4>
+                        <p>Hemos mandado tu diploma en archivo adjunto <code>.PDF</code> y comprobante a: <strong id="display-email" class="highlight-email">alumno@correo.com</strong></p>
+                        <div class="email-badges">
+                            <span class="badge badge-green"><i class="fa-solid fa-check"></i> Adjunto: Diploma_Official_CECANI.pdf</span>
+                            <span class="badge badge-blue"><i class="fa-solid fa-receipt"></i> Recibo de Pago Stripe</span>
+                        </div>
+                    </div>
+                    <div class="email-delivery-action">
+                        <button class="btn btn-secondary btn-sm" onclick="openModal('email-preview-modal')">
+                            <i class="fa-regular fa-eye"></i> Ver Correo Recibido
+                        </button>
+                    </div>
+                </div>
+
+                <div class="diploma-generator-grid">
+                    <!-- Datos en Certificado (Por si desea corregir su nombre) -->
+                    <div class="diploma-form-card">
+                        <div class="card-title-row">
+                            <h2>Datos Plasmados</h2>
+                            <span class="badge badge-gold">Verificado</span>
+                        </div>
+                        <p class="subtitle">Estos son los datos impresos en tu documento con tipografía clásica. Si adviertes algún error en tu nombre, corrígelo aquí y regenera la vista previa.</p>
+
+                        <form id="diploma-data-form" onsubmit="handleGeneratePDF(event); return false;">
+                            <div class="form-group">
+                                <label for="student-name">Nombre del Alumno <span class="req">*</span></label>
+                                <input type="text" id="student-name" class="input-lg" placeholder="Ej. CYNTHIA ANGELICA RODRIGUEZ ESCARCEGA" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="course-title-input">Certificación / Curso</label>
+                                <textarea id="course-title-input" rows="2" class="input-md" readonly style="opacity: 0.8;"></textarea>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group half">
+                                    <label for="course-duration-input">Duración / Horas</label>
+                                    <input type="text" id="course-duration-input" readonly style="opacity: 0.8;">
+                                </div>
+                                <div class="form-group half">
+                                    <label for="course-date-input">Fechas</label>
+                                    <input type="text" id="course-date-input" readonly style="opacity: 0.8;">
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="previewDiploma()">
+                                    <i class="fa-solid fa-arrows-rotate"></i> Actualizar Nombre en Diploma
+                                </button>
+                                <button type="button" class="btn btn-gold btn-lg" onclick="downloadDiploma()">
+                                    <i class="fa-solid fa-file-arrow-down"></i> Descargar Diploma PDF
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Vista Previa PDF -->
+                    <div class="diploma-preview-card">
+                        <div class="preview-header">
+                            <h3>Vista Previa del Documento Original</h3>
+                            <span class="badge badge-blue"><i class="fa-solid fa-file-pdf"></i> PDF Oficial</span>
+                        </div>
+                        <div class="preview-container" id="pdf-preview-box">
+                            <div class="loading-spinner" id="preview-loader">
+                                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                                <span>Generando documento original con PDF-Lib...</span>
+                            </div>
+                            <iframe id="pdf-iframe" class="pdf-iframe" title="Vista previa del diploma"></iframe>
+                        </div>
+                        <div class="preview-footer">
+                            <span><i class="fa-solid fa-circle-info"></i> Documento de alta resolución con valor curricular y sello de CECANI Latinoamérica.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL 1: VISTA PREVIA DEL CORREO ENVIADO (SIMULACIÓN DE BANDEJA DE ENTRADA) -->
+    <div class="modal-overlay" id="email-preview-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-envelope-open-text"></i> Simulación: Bandeja de Entrada del Alumno</h3>
+                <button class="btn-close-modal" onclick="closeModal('email-preview-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="simulated-email-box">
+                    <div class="email-header-sim">
+                        <div class="email-meta-row"><strong>De:</strong> CECANI Latinoamérica &lt;certificaciones@cecanilatinoamerica.com&gt;</div>
+                        <div class="email-meta-row"><strong>Para:</strong> <span id="email-sim-to">alumno@correo.com</span></div>
+                        <div class="email-meta-row"><strong>Asunto:</strong> 🎓 Tu Constancia Oficial de CECANI Latinoamérica + Recibo de Pago</div>
+                    </div>
+                    <div class="email-body-sim">
+                        <div class="email-brand-banner">
+                            <i class="fa-solid fa-graduation-cap"></i> CECANI LATINOAMÉRICA - CERTIFICACIÓN OFICIAL
+                        </div>
+                        <p>Hola <strong><span id="email-sim-name">ALUMNO</span></strong>,</p>
+                        <p>¡Felicidades! Has concluido satisfactoriamente tu inscripción y pago al programa: <strong id="email-sim-course" style="color:#1e3a8a;">Webinar de Actualización</strong>.</p>
+                        <p>Adjunto a este correo encontrarás tu <strong>Diploma Oficial en formato PDF de alta resolución</strong> con sello de autenticidad y valor curricular, firmado por nuestra Dirección General.</p>
+                        
+                        <div class="email-attachment-sim">
+                            <i class="fa-solid fa-file-pdf" style="font-size:2rem; color:#ef4444;"></i>
+                            <div class="attachment-details">
+                                <strong>Diploma_Official_CECANI.pdf</strong>
+                                <span>2.4 MB • Documento PDF Certificado</span>
+                            </div>
+                            <button class="btn btn-primary btn-sm" onclick="downloadDiploma()">Descargar</button>
+                        </div>
+
+                        <div class="email-receipt-box">
+                            <h5>Resumen de Pago (Stripe #<span id="email-sim-tx">TX-000000</span>)</h5>
+                            <div class="receipt-row"><span>Monto Pagado:</span> <strong id="email-sim-price">$199.00 MXN</strong></div>
+                            <div class="receipt-row"><span>Estado:</span> <span style="color:#10b981; font-weight:bold;">Aprobado y Pagado</span></div>
+                        </div>
+
+                        <p class="email-sign">Atentamente,<br><strong>Departamento de Acreditación Escolar<br>CECANI Latinoamérica</strong></p>
+                    </div>
+                </div>
+
+                <div class="tech-note-box">
+                    <i class="fa-solid fa-code"></i>
+                    <div>
+                        <strong>Nota Técnica (Integración Correo Real):</strong>
+                        <p>En el entorno local, este correo se simula en tiempo real en la interfaz. En producción, el webhook <code>checkout.session.completed</code> de Stripe llama a un servicio como <strong>EmailJS</strong>, <strong>Resend</strong> o <strong>SendGrid</strong> para mandar el PDF adjunto.</p>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn btn-primary" onclick="closeModal('email-preview-modal')">Cerrar Simulación</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: CONFIGURACIÓN GENERAL Y COORDENADAS PDF -->
+    <div class="modal-overlay" id="config-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-gear"></i> Configuración y Ajustes del Diploma</h3>
+                <button class="btn-close-modal" onclick="closeModal('config-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-tabs">
+                    <button class="tab-btn active" onclick="switchTab('tab-coords', this)">Ajustes de PDF (Coordenadas)</button>
+                    <button class="tab-btn" onclick="switchTab('tab-stripe', this)">Stripe API</button>
+                </div>
+
+                <!-- TAB 1: COORDENADAS PDF -->
+                <div id="tab-coords" class="tab-content active">
+                    <p class="tab-intro">El archivo <code>diploma.pdf</code> en la carpeta es la constancia original. Calibra aquí la posición del texto y la máscara de limpieza en tiempo real.</p>
+                    
+                    <div class="config-group-box">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="cfg-cover-example" checked onchange="triggerPreviewUpdate()">
+                            <span><strong>Cubrir datos de ejemplo del PDF con recuadro blanco</strong> (Limpiador para plantillas con nombre previo)</span>
+                        </label>
+                    </div>
+
+                    <h4>Coordenadas de Impresión (Puntos PDF)</h4>
+                    
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>Posición Vertical (Y) del Nombre:</span>
+                            <strong id="val-name-y">320</strong>
+                        </div>
+                        <input type="range" id="cfg-name-y" min="50" max="550" value="320" step="5" oninput="updateSliderVal('val-name-y', this.value); triggerPreviewUpdate();">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>Tamaño de Fuente del Nombre:</span>
+                            <strong id="val-name-size">26 pt</strong>
+                        </div>
+                        <input type="range" id="cfg-name-size" min="14" max="40" value="26" step="1" oninput="updateSliderVal('val-name-size', this.value + ' pt'); triggerPreviewUpdate();">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>Posición Vertical (Y) del Curso:</span>
+                            <strong id="val-course-y">225</strong>
+                        </div>
+                        <input type="range" id="cfg-course-y" min="50" max="500" value="225" step="5" oninput="updateSliderVal('val-course-y', this.value); triggerPreviewUpdate();">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>Posición Vertical (Y) de Fechas y Duración:</span>
+                            <strong id="val-dates-y">185</strong>
+                        </div>
+                        <input type="range" id="cfg-dates-y" min="50" max="400" value="185" step="5" oninput="updateSliderVal('val-dates-y', this.value); triggerPreviewUpdate();">
+                    </div>
+
+                    <div class="modal-actions">
+                        <button class="btn btn-secondary" onclick="resetDefaultCoords()">Restaurar Defecto</button>
+                        <button class="btn btn-primary" onclick="closeModal('config-modal'); previewDiploma();">Aplicar y Cerrar</button>
+                    </div>
+                </div>
+
+                <!-- TAB 2: STRIPE API -->
+                <div id="tab-stripe" class="tab-content">
+                    <p class="tab-intro">Actualmente el sistema opera en <strong>Modo Simulación Segura</strong> para facilitar las pruebas locales. Si deseas conectar Stripe en Producción:</p>
+                    
+                    <div class="form-group">
+                        <label>Modo de Funcionamiento de Stripe:</label>
+                        <select id="cfg-stripe-mode" class="input-md" onchange="toggleStripeMode(this.value)">
+                            <option value="simulation" selected>Simulación Completa (Sin backend / Pruebas directas)</option>
+                            <option value="live">Stripe Payment Links / Checkout Real</option>
+                        </select>
+                    </div>
+
+                    <div id="live-stripe-config" style="display: none;">
+                        <div class="form-group">
+                            <label>Enlace General para Webinar ($199):</label>
+                            <input type="text" id="cfg-link-webinar" placeholder="https://buy.stripe.com/test_...webinar" class="input-md">
+                        </div>
+                        <div class="form-group">
+                            <label>Enlace General para Diplomado AC ($299):</label>
+                            <input type="text" id="cfg-link-ac" placeholder="https://buy.stripe.com/test_...cursoAC" class="input-md">
+                        </div>
+                        <small class="help-text">Al activar este modo, los cobros redirigen a Stripe y al volver emiten el diploma automáticamente.</small>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button class="btn btn-primary" onclick="closeModal('config-modal')">Guardar Configuración</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2026 CECANI Latinoamérica. Sistema Integrado de Certificación y Verificación Stripe.</p>
+            <div class="footer-links">
+                <a href="index.html">Panel de Administración</a>
+                <a href="javascript:void(0)" onclick="openModal('config-modal')">Ajustes PDF</a>
+                <a href="javascript:void(0)" onclick="alert('Soporte Oficial: contacto@cecanilatinoamerica.com')">Soporte</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- PDF-Lib CDN -->
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <!-- Custom JS -->
+    <script src="app.js"></script>
+</body>
+</html>
