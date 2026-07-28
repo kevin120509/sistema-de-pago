@@ -418,8 +418,10 @@ function handlePaymentSubmit(event) {
 
     // A. Opción A: Modo Stripe Checkout Serverless (Vercel API)
     if (AppState.payment.mode === 'serverless' || AppState.payment.mode === 'live') {
-        btnSubmit.disabled = true;
-        btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Conectando con Stripe Checkout...';
+        if (btnSubmit) {
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Conectando con Stripe Checkout...';
+        }
 
         fetch('/api/checkout', {
             method: 'POST',
@@ -449,7 +451,7 @@ function handlePaymentSubmit(event) {
                 window.location.href = `${liveUrl}?prefilled_email=${encodeURIComponent(AppState.payment.studentEmail)}`;
                 return;
             }
-            btnSubmit.disabled = false;
+            if (btnSubmit) btnSubmit.disabled = false;
             runLocalSimulationPayment(btnSubmit, course);
         });
         return;
@@ -460,24 +462,30 @@ function handlePaymentSubmit(event) {
 }
 
 function runLocalSimulationPayment(btnSubmit, course) {
-    btnSubmit.disabled = true;
-    btnSubmit.style.background = '#4f46e5';
-    btnSubmit.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Verificando tarjeta y saldo...';
+    if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.style.background = '#4f46e5';
+        btnSubmit.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Verificando tarjeta y saldo...';
+    }
 
     setTimeout(() => {
-        btnSubmit.innerHTML = `<i class="fa-solid fa-lock"></i> Cobrando $${course.price} MXN a ${AppState.payment.studentName || 'Titular'}...`;
+        if (btnSubmit) btnSubmit.innerHTML = `<i class="fa-solid fa-lock"></i> Cobrando $${course.price} MXN a ${AppState.payment.studentName || 'Titular'}...`;
         
         setTimeout(() => {
-            btnSubmit.style.background = '#10b981';
-            btnSubmit.innerHTML = '<i class="fa-solid fa-check"></i> ¡Pago Aprobado y Confirmado!';
+            if (btnSubmit) {
+                btnSubmit.style.background = '#10b981';
+                btnSubmit.innerHTML = '<i class="fa-solid fa-check"></i> ¡Pago Aprobado y Confirmado!';
+            }
 
             AppState.payment.completed = true;
             AppState.payment.txId = `TX-${Math.floor(1000000 + Math.random() * 9000000)}`;
 
             setTimeout(() => {
-                btnSubmit.disabled = false;
-                btnSubmit.style.background = '#6366f1';
-                btnSubmit.innerHTML = `<i class="fa-solid fa-lock"></i> Pagar $${course.price} MXN y Emitir Diploma`;
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.style.background = '#6366f1';
+                    btnSubmit.innerHTML = `<i class="fa-solid fa-lock"></i> Pagar $${course.price} MXN y Emitir Diploma`;
+                }
                 
                 goToStudentStep(2);
             }, 800);
