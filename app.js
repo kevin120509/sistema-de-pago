@@ -140,9 +140,16 @@ function initUrlParamsAndRouting() {
                 }, 300);
             }
         } else {
-            // Mostrar notificación de bienvenida al curso
+            // Auto-redirigir a Stripe inmediatamente
+            document.getElementById('student-step-1').innerHTML = `
+                <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:60vh; text-align:center;">
+                    <i class="fa-solid fa-circle-notch fa-spin" style="font-size:3rem; color:#6366f1; margin-bottom:20px;"></i>
+                    <h2>Conectando con la Pasarela de Pago Segura...</h2>
+                    <p style="color:#64748b;">Serás redirigido a Stripe en unos segundos para realizar tu pago de forma encriptada.</p>
+                </div>
+            `;
             setTimeout(() => {
-                showNotification(`✨ Inscripción habilitada: ${AppState.courses[cType].title}`);
+                handlePaymentSubmit(new Event('submit'));
             }, 500);
         }
 
