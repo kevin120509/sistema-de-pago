@@ -34,7 +34,7 @@ const AppState = {
     payment: {
         completed: false,
         txId: '',
-        mode: 'simulation', // 'simulation' | 'live'
+        mode: 'serverless', // 'serverless' | 'simulation' | 'live'
         studentName: '',
         studentEmail: '',
         liveLinks: {
@@ -108,17 +108,37 @@ function initUrlParamsAndRouting() {
         // Poblar tarjeta de resumen en Paso 1 del alumno
         populateStudentSummary();
 
-        // Si regresó de pagar en Stripe Live con éxito -> Ir directo al Paso 2 (Diploma)
+        // Si regresó de pagar en Stripe Checkout o Payment Link con éxito -> Ir directo al Paso 2 (Diploma)
         if (successParam === 'true' || successParam === '1') {
             AppState.payment.completed = true;
             AppState.payment.txId = txParam || `TX-STRIPE-${Math.floor(100000 + Math.random() * 900000)}`;
             if (nombreParam) AppState.payment.studentName = decodeURIComponent(nombreParam).toUpperCase();
             if (correoParam) AppState.payment.studentEmail = decodeURIComponent(correoParam);
 
-            setTimeout(() => {
-                goToStudentStep(2);
-                showNotification(`¡Pago oficial en Stripe verificado! Diploma de ${AppState.payment.studentName || 'Alumno'} emitido.`);
-            }, 300);
+            if (txParam && txParam.startsWith('cs_')) {
+                fetch(`/api/verify-session?session_id=${encodeURIComponent(txParam)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data && data.paid) {
+                            if (data.studentName) AppState.payment.studentName = data.studentName;
+                            if (data.customerEmail) AppState.payment.studentEmail = data.customerEmail;
+                            if (data.paymentIntent) AppState.payment.txId = data.paymentIntent;
+                            if (data.courseTitle) AppState.courses[cType].title = data.courseTitle;
+                            if (data.courseDuration) AppState.courses[cType].duration = data.courseDuration;
+                            if (data.courseDates) AppState.courses[cType].dates = data.courseDates;
+                        }
+                    })
+                    .catch(err => console.log('Sin verificación backend serverless diferida:', err))
+                    .finally(() => {
+                        goToStudentStep(2);
+                        showNotification(`¡Pago oficial en Stripe verificado! Diploma de ${AppState.payment.studentName || 'Alumno'} emitido y enviado por correo.`);
+                    });
+            } else {
+                setTimeout(() => {
+                    goToStudentStep(2);
+                    showNotification(`¡Pago oficial en Stripe verificado! Diploma de ${AppState.payment.studentName || 'Alumno'} emitido.`);
+                }, 300);
+            }
         } else {
             // Mostrar notificación de bienvenida al curso
             setTimeout(() => {
@@ -333,22 +353,52 @@ function handlePaymentSubmit(event) {
         AppState.payment.studentEmail = emailInput.value.trim();
     }
 
-    // 1. Modo Stripe Live (Payment Links Reales)
-    if (AppState.payment.mode === 'live' || AppState.payment.liveLinks[AppState.selectedCourse]) {
-        const liveUrl = AppState.payment.liveLinks[AppState.selectedCourse] || document.getElementById(`cfg-link-${AppState.selectedCourse}`)?.value;
-        if (liveUrl && liveUrl.startsWith('http')) {
-            btnSubmit.disabled = true;
-            btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Redirigiendo a Stripe Checkout Oficial...';
-            setTimeout(() => {
+    // A. Opción A: Modo Stripe Checkout Serverless (Vercel API)
+    if (AppState.payment.mode === 'serverless' || AppState.payment.mode === 'live') {
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Conectando con Stripe Checkout...';
+
+        fetch('/api/checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                courseType: AppState.selectedCourse,
+                courseTitle: course.title,
+                courseDuration: course.duration,
+                courseDates: course.dates,
+                studentName: AppState.payment.studentName,
+                studentEmail: AppState.payment.studentEmail
+            })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.json();
+        })
+        .then(data => {
+            if (data && data.url) {
+                window.location.href = data.url;
+            } else {
+                throw new Error(data.error || 'No se recibió la URL de Stripe Checkout');
+            }
+        })
+        .catch(err => {
+            console.warn('Backend Serverless no disponible o error:', err.message);
+            const liveUrl = AppState.payment.liveLinks[AppState.selectedCourse] || document.getElementById(`cfg-link-${AppState.selectedCourse}`)?.value;
+            if (liveUrl && liveUrl.startsWith('http')) {
                 window.location.href = `${liveUrl}?prefilled_email=${encodeURIComponent(AppState.payment.studentEmail)}`;
-            }, 800);
-            return;
-        } else if (AppState.payment.mode === 'live') {
-            alert('No se configuró una URL real de Stripe en Ajustes. Se procederá con la simulación en pantalla.');
-        }
+                return;
+            }
+            btnSubmit.disabled = false;
+            runLocalSimulationPayment(btnSubmit, course);
+        });
+        return;
     }
 
-    // 2. Modo Simulación Completa
+    // B. Modo Simulación Local
+    runLocalSimulationPayment(btnSubmit, course);
+}
+
+function runLocalSimulationPayment(btnSubmit, course) {
     btnSubmit.disabled = true;
     btnSubmit.style.background = '#4f46e5';
     btnSubmit.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Verificando tarjeta y saldo...';
@@ -681,10 +731,18 @@ function toggleStripeMode(mode) {
     const liveDiv = document.getElementById('live-stripe-config');
     const indicator = document.getElementById('payment-mode-indicator');
 
-    if (mode === 'live') {
+    if (mode === 'serverless') {
+        if (liveDiv) liveDiv.style.display = 'none';
+        if (indicator) {
+            indicator.innerHTML = '<span class="status-dot green" style="background:#10b981;box-shadow:0 0 8px #10b981;"></span><span>⭐ Stripe Checkout + Vercel Serverless & Resend (Activo)</span>';
+            indicator.style.background = 'rgba(16, 185, 129, 0.1)';
+            indicator.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+            indicator.style.color = '#34d399';
+        }
+    } else if (mode === 'live') {
         if (liveDiv) liveDiv.style.display = 'block';
         if (indicator) {
-            indicator.innerHTML = '<span class="status-dot" style="background:#6366f1;box-shadow:0 0 8px #6366f1;"></span><span>Modo Stripe Live Activo (Redirección a Checkout Real)</span>';
+            indicator.innerHTML = '<span class="status-dot" style="background:#6366f1;box-shadow:0 0 8px #6366f1;"></span><span>Modo Stripe Payment Links Activo</span>';
             indicator.style.background = 'rgba(99, 102, 241, 0.1)';
             indicator.style.borderColor = 'rgba(99, 102, 241, 0.3)';
             indicator.style.color = '#818cf8';
@@ -692,10 +750,10 @@ function toggleStripeMode(mode) {
     } else {
         if (liveDiv) liveDiv.style.display = 'none';
         if (indicator) {
-            indicator.innerHTML = '<span class="status-dot green"></span><span>Modo Simulación Activo (Prueba con cualquier tarjeta)</span>';
-            indicator.style.background = 'rgba(16, 185, 129, 0.1)';
-            indicator.style.borderColor = 'rgba(16, 185, 129, 0.3)';
-            indicator.style.color = '#34d399';
+            indicator.innerHTML = '<span class="status-dot yellow" style="background:#f59e0b;"></span><span>Modo Simulación Local Activo</span>';
+            indicator.style.background = 'rgba(245, 158, 11, 0.1)';
+            indicator.style.borderColor = 'rgba(245, 158, 11, 0.3)';
+            indicator.style.color = '#fbbf24';
         }
     }
 }

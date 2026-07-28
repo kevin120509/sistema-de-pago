@@ -1,0 +1,14 @@
+{
+  "name": "sistema-de-pago-cecani",
+  "version": "1.0.0",
+  "description": "Portal de Certificación, Pagos vía Stripe y Envío de Diplomas por Resend - CECANI Latinoamérica",
+  "main": "app.js",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "dependencies": {
+    "pdf-lib": "^1.17.1",
+    "resend": "^3.2.0",
+    "stripe": "^14.21.0"
+  }
+}

@@ -18,16 +18,15 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Background Animated Gradients -->
-    <div class="bg-glow bg-glow-1"></div>
-    <div class="bg-glow bg-glow-2"></div>
+    <!-- Geometric Background Grid Layer -->
+    <div class="grid-bg-overlay"></div>
 
     <!-- Header / Navbar -->
     <header class="navbar">
         <div class="nav-container">
             <div class="brand" onclick="window.location.href='index.html'" style="cursor:pointer;" title="Volver a Inicio / Panel de Administración">
                 <div class="brand-logo">
-                    <i class="fa-solid fa-graduation-cap"></i>
+                    <i class="fa-solid fa-square-poll-vertical"></i>
                 </div>
                 <div class="brand-text">
                     <span class="brand-title">CECANI</span>
@@ -35,7 +34,7 @@
                 </div>
             </div>
             <div class="nav-badges">
-                <span class="badge badge-gold hide-mobile" id="nav-mode-badge"><i class="fa-solid fa-sliders"></i> Modo Administración</span>
+                <span class="badge badge-gold hide-mobile" id="nav-mode-badge"><i class="fa-solid fa-sliders"></i> Panel de Administración</span>
                 <button id="btn-config" class="btn-icon" title="Configuración de API Stripe y Coordenadas PDF" onclick="openModal('config-modal')">
                     <i class="fa-solid fa-gear"></i>
                 </button>
@@ -49,7 +48,7 @@
         <!-- VISTA 1: PANEL DE ADMINISTRACIÓN / CREADOR DE ENLACES (Por defecto si no hay parámetros en URL) -->
         <section id="view-admin" class="view-section active">
             <div class="section-header">
-                <span class="admin-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> Panel para Organizadores e Instructores</span>
+                <span class="admin-badge"><i class="fa-solid fa-layer-group"></i> Sistema para Organizadores e Instructores</span>
                 <h1>Crear Enlace de Pago y Certificación</h1>
                 <p>Configura los datos de tu webinar, curso o diplomado. Al compartir el enlace generado, tus alumnos entrarán directo a pagar y su diploma oficial se emitirá con la información exacta que definas aquí.</p>
             </div>
@@ -380,7 +379,7 @@
                     <div class="email-header-sim">
                         <div class="email-meta-row"><strong>De:</strong> CECANI Latinoamérica &lt;certificaciones@cecanilatinoamerica.com&gt;</div>
                         <div class="email-meta-row"><strong>Para:</strong> <span id="email-sim-to">alumno@correo.com</span></div>
-                        <div class="email-meta-row"><strong>Asunto:</strong> 🎓 Tu Constancia Oficial de CECANI Latinoamérica + Recibo de Pago</div>
+                        <div class="email-meta-row"><strong>Asunto:</strong> Tu Constancia Oficial de CECANI Latinoamérica + Recibo de Pago</div>
                     </div>
                     <div class="email-body-sim">
                         <div class="email-brand-banner">
@@ -490,13 +489,14 @@
 
                 <!-- TAB 2: STRIPE API -->
                 <div id="tab-stripe" class="tab-content">
-                    <p class="tab-intro">Actualmente el sistema opera en <strong>Modo Simulación Segura</strong> para facilitar las pruebas locales. Si deseas conectar Stripe en Producción:</p>
+                    <p class="tab-intro">Configura el modo de integración con la pasarela oficial de cobros <strong>Stripe</strong> y envío por <strong>Resend</strong>:</p>
                     
                     <div class="form-group">
                         <label>Modo de Funcionamiento de Stripe:</label>
                         <select id="cfg-stripe-mode" class="input-md" onchange="toggleStripeMode(this.value)">
-                            <option value="simulation" selected>Simulación Completa (Sin backend / Pruebas directas)</option>
-                            <option value="live">Stripe Payment Links / Checkout Real</option>
+                            <option value="serverless" selected>Stripe Checkout + Vercel Serverless & Resend (Recomendado)</option>
+                            <option value="simulation">Simulación Local (Pruebas directas en pantalla)</option>
+                            <option value="live">Stripe Payment Links (Enlaces directos estáticos)</option>
                         </select>
                     </div>
 

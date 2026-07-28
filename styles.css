@@ -1,23 +1,23 @@
 /* ==========================================================================
-   CECANI LATINOAMÉRICA - DESIGN SYSTEM & STYLES 3.0 (Vanilla CSS)
-   Aesthetic: Luxury Corporate & Academic (Deep Navy, Gold Gradients, Glassmorphism)
+   CECANI LATINOAMÉRICA - GEOMETRIC DESIGN SYSTEM (Vanilla CSS)
+   Aesthetic: Technical Architectural (Obsidian Grid, Sharp Geometry, Gold Accents)
    ========================================================================== */
 
 :root {
-    /* Color Palette */
-    --navy-900: #060c18;
-    --navy-800: #0a1428;
-    --navy-700: #101f3e;
-    --navy-600: #19305c;
-    --navy-500: #24437e;
+    /* Architectural Color Palette */
+    --navy-900: #0a0d14;
+    --navy-800: #101522;
+    --navy-700: #171e30;
+    --navy-600: #202a42;
+    --navy-500: #2a3756;
     
     --gold-primary: #d4af37;
-    --gold-light: #f3e5ab;
-    --gold-dark: #aa8c2c;
-    --gold-gradient: linear-gradient(135deg, #f3e5ab 0%, #d4af37 50%, #aa8c2c 100%);
+    --gold-light: #f5e6b3;
+    --gold-dark: #a38222;
+    --gold-gradient: linear-gradient(135deg, #f5e6b3 0%, #d4af37 100%);
     
-    --blue-accent: #3b82f6;
-    --blue-glow: rgba(59, 130, 246, 0.4);
+    --blue-accent: #4f46e5;
+    --blue-glow: rgba(79, 70, 229, 0.25);
     
     --text-white: #ffffff;
     --text-gray-100: #f1f5f9;
@@ -25,22 +25,24 @@
     --text-gray-400: #94a3b8;
     --text-gray-500: #64748b;
     
-    /* Glassmorphism Tokens */
-    --glass-bg: rgba(255, 255, 255, 0.04);
-    --glass-bg-hover: rgba(255, 255, 255, 0.08);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --glass-border-gold: rgba(212, 175, 55, 0.4);
-    --glass-blur: blur(16px);
+    /* Geometric Structure Tokens */
+    --radius-sm: 2px;
+    --radius-md: 4px;
+    --radius-lg: 6px;
     
-    /* Elevations & Shadows */
-    --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 0 40px rgba(16, 31, 62, 0.5);
-    --shadow-gold: 0 0 25px rgba(212, 175, 55, 0.25);
+    --card-bg: rgba(16, 21, 34, 0.95);
+    --card-border: 1px solid rgba(255, 255, 255, 0.12);
+    --card-border-active: 1px solid rgba(212, 175, 55, 0.5);
+    
+    /* Elevations & Sharp Shadows */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 6px 12px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.6);
+    --shadow-gold: 0 0 15px rgba(212, 175, 55, 0.2);
     
     /* Transitions */
-    --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-smooth: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: 0.15s ease-out;
+    --transition-smooth: 0.25s ease-out;
 }
 
 * {
@@ -61,40 +63,31 @@ body {
     line-height: 1.6;
 }
 
-/* Background Ambient Glows */
-.bg-glow {
+/* Background Geometric Grid Overlay */
+.grid-bg-overlay {
     position: fixed;
-    border-radius: 50%;
-    filter: blur(120px);
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
     pointer-events: none;
     z-index: 0;
-}
-.bg-glow-1 {
-    top: -10%;
-    left: 10%;
-    width: 500px;
-    height: 500px;
-    background: radial-gradient(circle, rgba(36, 67, 126, 0.3) 0%, transparent 70%);
-}
-.bg-glow-2 {
-    bottom: -10%;
-    right: 5%;
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(circle, rgba(212, 175, 55, 0.12) 0%, transparent 70%);
+    background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 36px 36px;
 }
 
 /* ==========================================================================
-   HEADER / NAVBAR
+   HEADER / NAVBAR GEOMÉTRICO
    ========================================================================== */
 .navbar {
-    background: rgba(6, 12, 24, 0.8);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--glass-border);
+    background: rgba(10, 13, 20, 0.95);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     position: sticky;
     top: 0;
     z-index: 100;
-    padding: 1rem 0;
+    padding: 0.85rem 0;
 }
 
 .nav-container {
@@ -114,16 +107,16 @@ body {
 }
 
 .brand-logo {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background: var(--gold-gradient);
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    background: var(--navy-700);
+    border: 1px solid var(--gold-primary);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.4rem;
-    color: var(--navy-900);
-    box-shadow: var(--shadow-gold);
+    font-size: 1.2rem;
+    color: var(--gold-primary);
 }
 
 .brand-text {
@@ -135,12 +128,9 @@ body {
 .brand-title {
     font-family: 'Cinzel', serif;
     font-weight: 700;
-    font-size: 1.35rem;
+    font-size: 1.3rem;
     letter-spacing: 2px;
-    background: var(--gold-gradient);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--gold-light);
 }
 
 .brand-subtitle {
@@ -148,7 +138,7 @@ body {
     font-size: 0.65rem;
     font-weight: 600;
     letter-spacing: 3px;
-    color: var(--text-gray-300);
+    color: var(--text-gray-400);
 }
 
 .nav-badges {
@@ -157,41 +147,42 @@ body {
     gap: 1rem;
 }
 
-/* Badges */
+/* Badges Geométricos */
 .badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.4rem 0.85rem;
-    border-radius: 50px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
+    gap: 0.4rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1px;
     text-transform: uppercase;
 }
 .badge-gold {
-    background: rgba(212, 175, 55, 0.15);
+    background: rgba(212, 175, 55, 0.1);
     color: var(--gold-light);
-    border: 1px solid var(--glass-border-gold);
+    border: 1px solid rgba(212, 175, 55, 0.4);
 }
 .badge-blue {
-    background: rgba(59, 130, 246, 0.15);
-    color: #60a5fa;
-    border: 1px solid rgba(59, 130, 246, 0.3);
+    background: rgba(79, 70, 229, 0.15);
+    color: #818cf8;
+    border: 1px solid rgba(79, 70, 229, 0.4);
 }
 .badge-green {
     background: rgba(16, 185, 129, 0.15);
     color: #34d399;
-    border: 1px solid rgba(16, 185, 129, 0.3);
+    border: 1px solid rgba(16, 185, 129, 0.4);
 }
 
 .btn-icon {
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
+    background: var(--navy-800);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     color: var(--text-gray-300);
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -199,10 +190,9 @@ body {
     transition: var(--transition-fast);
 }
 .btn-icon:hover {
-    background: var(--glass-bg-hover);
-    color: var(--text-white);
+    background: var(--navy-700);
+    color: var(--gold-primary);
     border-color: var(--gold-primary);
-    transform: rotate(45deg);
 }
 
 /* ==========================================================================
@@ -257,24 +247,24 @@ body {
     background: rgba(212, 175, 55, 0.12);
     border: 1px solid var(--glass-border-gold);
     color: var(--gold-light);
-    border-radius: 50px;
+    border-radius: var(--radius-sm);
     font-size: 0.85rem;
     font-weight: 600;
     margin-bottom: 1.25rem;
-    box-shadow: var(--shadow-gold);
 }
 
 /* ==========================================================================
-   VISTA 1: ADMIN LINK CREATOR CARD
+   VISTA 1: ADMIN LINK CREATOR CARD (GEOMÉTRICO)
    ========================================================================== */
 .admin-card-main {
     max-width: 850px;
     margin: 0 auto 3rem auto;
-    background: var(--navy-800);
-    border: 1px solid var(--glass-border-gold);
-    border-radius: 28px;
-    padding: 3rem 2.5rem;
-    box-shadow: var(--shadow-lg);
+    background: var(--card-bg);
+    border: var(--card-border);
+    border-top: 3px solid var(--gold-primary);
+    border-radius: var(--radius-md);
+    padding: 2.5rem 2.25rem;
+    box-shadow: var(--shadow-md);
     position: relative;
     overflow: hidden;
 }
@@ -284,13 +274,16 @@ body {
 }
 .form-group label {
     display: block;
-    font-size: 0.9rem;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.85rem;
     font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
     color: var(--text-gray-300);
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.5rem;
 }
 .req {
-    color: #f43f5e;
+    color: #ef4444;
 }
 .field-help {
     display: block;
@@ -306,9 +299,9 @@ body {
 }
 .input-with-icon i {
     position: absolute;
-    left: 1.25rem;
+    left: 1.1rem;
     color: var(--text-gray-400);
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     pointer-events: none;
 }
 .input-with-icon input,
@@ -317,25 +310,25 @@ textarea,
 .input-lg,
 .input-md {
     width: 100%;
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px solid var(--glass-border);
-    border-radius: 14px;
-    padding: 0.95rem 1rem 0.95rem 2.8rem;
+    background: rgba(10, 13, 20, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-sm);
+    padding: 0.85rem 1rem 0.85rem 2.75rem;
     color: var(--text-white);
     font-family: 'Inter', sans-serif;
     font-size: 0.95rem;
     transition: var(--transition-fast);
 }
 .input-highlight {
-    border-color: rgba(212, 175, 55, 0.4);
-    background: rgba(0, 0, 0, 0.5);
+    border-color: rgba(212, 175, 55, 0.5);
+    background: rgba(10, 13, 20, 0.9);
 }
 .input-lg {
-    padding-left: 1.25rem;
-    font-size: 1.05rem;
+    padding-left: 1.1rem;
+    font-size: 1rem;
 }
 .input-md {
-    padding-left: 1.25rem;
+    padding-left: 1.1rem;
 }
 
 .input-with-icon input:focus,
@@ -343,9 +336,9 @@ textarea:focus,
 .input-lg:focus,
 .input-md:focus {
     outline: none;
-    border-color: var(--blue-accent);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
-    background: rgba(0, 0, 0, 0.6);
+    border-color: var(--gold-primary);
+    border-left: 3px solid var(--gold-primary);
+    background: rgba(10, 13, 20, 1);
 }
 
 .form-row {
@@ -356,67 +349,67 @@ textarea:focus,
     flex: 1;
 }
 
-/* Buttons */
+/* Botones Geométricos */
 .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.75rem;
-    padding: 1rem 1.75rem;
-    border-radius: 14px;
+    gap: 0.65rem;
+    padding: 0.85rem 1.6rem;
+    border-radius: var(--radius-sm);
     font-family: 'Outfit', sans-serif;
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
     cursor: pointer;
     border: none;
     transition: var(--transition-fast);
     text-decoration: none;
 }
 .btn-primary {
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--navy-700);
     color: var(--text-white);
-    border: 1px solid var(--glass-border);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 .btn-primary:hover {
-    background: rgba(255, 255, 255, 0.22);
-    transform: translateY(-2px);
+    background: var(--navy-600);
+    border-color: rgba(255, 255, 255, 0.4);
 }
 .btn-gold {
-    background: var(--gold-gradient);
+    background: var(--gold-primary);
     color: var(--navy-900);
-    font-weight: 700;
-    box-shadow: var(--shadow-gold);
+    border: 1px solid var(--gold-light);
 }
 .btn-gold:hover {
-    filter: brightness(1.1);
-    transform: translateY(-2px);
-    box-shadow: 0 0 35px rgba(212, 175, 55, 0.4);
+    background: var(--gold-light);
+    box-shadow: var(--shadow-gold);
 }
 .btn-secondary {
     background: transparent;
     color: var(--text-gray-300);
-    border: 1px solid var(--glass-border);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 .btn-secondary:hover {
-    background: var(--glass-bg);
+    background: var(--navy-800);
     color: var(--text-white);
+    border-color: rgba(255, 255, 255, 0.4);
 }
 .btn-sm {
-    padding: 0.55rem 1.1rem;
-    font-size: 0.85rem;
-    border-radius: 10px;
+    padding: 0.45rem 1rem;
+    font-size: 0.8rem;
 }
 .btn-md {
-    padding: 0.85rem 1.5rem;
-    font-size: 0.95rem;
+    padding: 0.75rem 1.35rem;
+    font-size: 0.85rem;
 }
 .btn-lg {
-    padding: 1.15rem 2.25rem;
-    font-size: 1.05rem;
+    padding: 1rem 2rem;
+    font-size: 0.95rem;
 }
 .btn-xl {
-    padding: 1.25rem 2.5rem;
-    font-size: 1.15rem;
+    padding: 1.1rem 2.25rem;
+    font-size: 1rem;
 }
 .btn-select {
     width: 100%;
@@ -425,32 +418,27 @@ textarea:focus,
 
 /* ADMIN GENERATED BOX */
 .admin-generated-box {
-    margin-top: 2.5rem;
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 95, 70, 0.22) 100%);
+    margin-top: 2.25rem;
+    background: rgba(16, 185, 129, 0.08);
     border: 1px solid rgba(16, 185, 129, 0.4);
-    border-radius: 20px;
-    padding: 2rem;
+    border-top: 3px solid #10b981;
+    border-radius: var(--radius-md);
+    padding: 1.75rem;
     animation: fadeIn 0.35s ease;
 }
 .generated-header {
     display: flex;
     align-items: center;
-    gap: 1.25rem;
-    margin-bottom: 1.25rem;
+    gap: 1.1rem;
+    margin-bottom: 1.1rem;
 }
 .icon-pulse {
-    font-size: 2.4rem;
+    font-size: 2.2rem;
     color: #10b981;
-    animation: pulseIcon 2s infinite;
-}
-@keyframes pulseIcon {
-    0% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.5)); }
-    50% { transform: scale(1.08); filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.8)); }
-    100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.5)); }
 }
 .generated-header h4 {
     font-family: 'Outfit', sans-serif;
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     color: #34d399;
     margin-bottom: 0.2rem;
 }
@@ -490,6 +478,9 @@ textarea:focus,
 /* ==========================================================================
    VISTA 2: STUDENT DIRECT FLOW & STEPPER
    ========================================================================== */
+/* ==========================================================================
+   VISTA 2: STUDENT DIRECT FLOW & STEPPER (GEOMÉTRICO)
+   ========================================================================== */
 .student-stepper {
     max-width: 600px !important;
     margin: 0 auto 2.5rem auto !important;
@@ -499,20 +490,19 @@ textarea:focus,
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 1.25rem 2rem;
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-border);
-    border-radius: 16px;
+    padding: 1rem 1.75rem;
+    background: var(--card-bg);
+    border: var(--card-border);
+    border-radius: var(--radius-md);
     box-shadow: var(--shadow-sm);
 }
 
 .step-item {
     display: flex;
     align-items: center;
-    gap: 0.85rem;
+    gap: 0.75rem;
     opacity: 0.45;
-    transition: var(--transition-smooth);
+    transition: var(--transition-fast);
 }
 .step-item.active {
     opacity: 1;
@@ -524,24 +514,23 @@ textarea:focus,
 }
 
 .step-circle {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.05);
-    border: 2px solid var(--text-gray-400);
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    background: var(--navy-700);
+    border: 1px solid var(--text-gray-400);
     display: flex;
     align-items: center;
     justify-content: center;
+    font-family: 'Outfit', sans-serif;
     font-weight: 700;
-    font-size: 0.95rem;
-    transition: var(--transition-smooth);
+    font-size: 0.85rem;
+    transition: var(--transition-fast);
 }
 .step-item.active .step-circle {
-    background: var(--gold-gradient);
+    background: var(--gold-primary);
     color: var(--navy-900);
     border-color: var(--gold-light);
-    box-shadow: var(--shadow-gold);
-    transform: scale(1.1);
 }
 
 .step-label {
@@ -549,39 +538,40 @@ textarea:focus,
     flex-direction: column;
 }
 .step-label span {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     text-transform: uppercase;
     letter-spacing: 1px;
     color: var(--text-gray-400);
 }
 .step-label strong {
-    font-size: 0.95rem;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.9rem;
     font-weight: 600;
     color: var(--text-white);
 }
 
 .step-line {
-    width: 80px;
+    width: 60px;
     height: 2px;
-    background: var(--glass-border);
-    margin: 0 1.5rem;
+    background: rgba(255, 255, 255, 0.15);
+    margin: 0 1.25rem;
 }
 
 .student-subview {
     display: none;
-    animation: fadeIn 0.4s ease forwards;
+    animation: fadeIn 0.35s ease forwards;
 }
 .student-subview.active {
     display: block;
 }
 
 /* ==========================================================================
-   STUDENT STEP 1: CHECKOUT & FORM
+   STUDENT STEP 1: CHECKOUT & FORM (GEOMÉTRICO)
    ========================================================================== */
 .checkout-container {
     display: grid;
     grid-template-columns: 1fr 1.3fr;
-    gap: 3rem;
+    gap: 2.5rem;
     max-width: 1050px;
     margin: 0 auto;
 }
@@ -592,18 +582,20 @@ textarea:focus,
 }
 .checkout-summary h3 {
     font-family: 'Outfit', sans-serif;
-    font-size: 1.4rem;
-    margin-bottom: 1.25rem;
+    font-size: 1.25rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 1.1rem;
     color: var(--text-white);
 }
 
 .summary-card {
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-border-gold);
-    border-radius: 20px;
-    padding: 2rem;
-    box-shadow: var(--shadow-gold);
+    background: var(--card-bg);
+    border: var(--card-border);
+    border-top: 3px solid var(--gold-primary);
+    border-radius: var(--radius-md);
+    padding: 1.75rem;
+    box-shadow: var(--shadow-md);
 }
 
 .summary-header {
@@ -615,11 +607,12 @@ textarea:focus,
 .summary-title {
     font-family: 'Outfit', sans-serif;
     font-weight: 700;
-    font-size: 1.25rem;
+    font-size: 1.15rem;
     color: var(--gold-light);
 }
 .summary-price {
-    font-size: 1.35rem;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.3rem;
     font-weight: 700;
     color: var(--text-white);
 }
@@ -627,17 +620,17 @@ textarea:focus,
 .summary-desc {
     color: var(--text-gray-300);
     font-size: 0.9rem;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.1rem;
 }
 
 .summary-meta {
-    background: rgba(0, 0, 0, 0.35);
-    padding: 0.85rem 1rem;
-    border-radius: 12px;
-    margin-bottom: 1.25rem;
+    background: rgba(10, 13, 20, 0.8);
+    padding: 0.75rem 0.9rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 1.1rem;
     font-size: 0.85rem;
     color: var(--text-gray-300);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 .meta-item {
     display: flex;
@@ -655,19 +648,20 @@ textarea:focus,
 .summary-divider {
     border: 0;
     height: 1px;
-    background: var(--glass-border);
-    margin: 1.25rem 0;
+    background: rgba(255, 255, 255, 0.12);
+    margin: 1.1rem 0;
 }
 
 .summary-row {
     display: flex;
     justify-content: space-between;
     color: var(--text-gray-300);
-    margin-bottom: 0.75rem;
-    font-size: 0.95rem;
+    margin-bottom: 0.65rem;
+    font-size: 0.9rem;
 }
 .summary-row.total {
-    font-size: 1.25rem;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.2rem;
     font-weight: 700;
     color: var(--text-white);
     margin-top: 0.5rem;
@@ -677,14 +671,14 @@ textarea:focus,
 }
 
 .stripe-badge-secure {
-    margin-top: 2rem;
-    padding-top: 1.25rem;
-    border-top: 1px solid var(--glass-border);
+    margin-top: 1.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     color: var(--text-gray-400);
     text-align: center;
 }
@@ -692,7 +686,7 @@ textarea:focus,
     color: #10b981;
 }
 .stripe-badge-secure strong {
-    color: #6366f1;
+    color: var(--blue-accent);
     font-weight: 700;
 }
 
@@ -703,26 +697,27 @@ textarea:focus,
     color: var(--text-gray-400);
     font-size: 0.85rem;
     cursor: pointer;
-    margin-top: 1.5rem;
-    padding: 0.6rem 1rem;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 10px;
+    margin-top: 1.25rem;
+    padding: 0.5rem 0.85rem;
+    background: var(--navy-800);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-sm);
     transition: var(--transition-fast);
     width: fit-content;
 }
 .admin-return-link:hover {
     color: var(--gold-light);
-    background: rgba(255, 255, 255, 0.08);
-    transform: translateX(-3px);
+    border-color: var(--gold-primary);
 }
 
 /* Form Wrapper */
 .checkout-form-wrapper {
-    background: var(--navy-800);
-    border: 1px solid var(--glass-border);
-    border-radius: 24px;
-    padding: 2.5rem;
-    box-shadow: var(--shadow-lg);
+    background: var(--card-bg);
+    border: var(--card-border);
+    border-top: 3px solid var(--blue-accent);
+    border-radius: var(--radius-md);
+    padding: 2.25rem;
+    box-shadow: var(--shadow-md);
     position: relative;
 }
 
@@ -730,46 +725,50 @@ textarea:focus,
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
 }
 .form-header h2 {
     font-family: 'Outfit', sans-serif;
-    font-size: 1.5rem;
+    font-size: 1.35rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     color: var(--text-white);
 }
 .card-icons {
     display: flex;
     gap: 0.5rem;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     color: var(--text-gray-400);
 }
 
 .mode-indicator {
-    background: rgba(16, 185, 129, 0.1);
+    background: rgba(16, 185, 129, 0.08);
     border: 1px solid rgba(16, 185, 129, 0.3);
     color: #34d399;
-    padding: 0.6rem 1rem;
-    border-radius: 10px;
+    padding: 0.55rem 0.85rem;
+    border-radius: var(--radius-sm);
     font-size: 0.8rem;
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
 }
 .status-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
     background: #10b981;
-    box-shadow: 0 0 8px #10b981;
 }
 
 .form-section-title {
-    font-size: 0.95rem;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.88rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     color: var(--gold-light);
-    margin-bottom: 1rem;
-    padding-bottom: 0.4rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 0.85rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -777,42 +776,41 @@ textarea:focus,
 
 .card-type-icon {
     position: absolute;
-    right: 1.1rem;
+    right: 1rem;
     color: var(--text-gray-400);
-    font-size: 1.2rem;
+    font-size: 1.1rem;
 }
 
 .btn-pay {
     width: 100%;
-    background: #6366f1;
+    background: var(--blue-accent);
     color: white;
-    font-size: 1.1rem;
-    font-weight: 600;
-    padding: 1.15rem;
-    border-radius: 14px;
-    border: none;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 1rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     cursor: pointer;
-    box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
     margin-top: 1.25rem;
     transition: var(--transition-fast);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.75rem;
+    gap: 0.65rem;
 }
 .btn-pay:hover {
-    background: #4f46e5;
-    transform: translateY(-2px);
-    box-shadow: 0 15px 25px -5px rgba(99, 102, 241, 0.5);
+    background: #4338ca;
 }
 .btn-pay:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-    transform: none;
 }
 
 .security-note {
-    margin-top: 1.5rem;
+    margin-top: 1.25rem;
     font-size: 0.75rem;
     color: var(--text-gray-400);
     text-align: center;
@@ -820,32 +818,32 @@ textarea:focus,
 }
 
 /* ==========================================================================
-   STUDENT STEP 2: DIPLOMA GENERATOR & EMAIL CONFIRMATION
+   STUDENT STEP 2: DIPLOMA GENERATOR & EMAIL CONFIRMATION (GEOMÉTRICO)
    ========================================================================== */
 .success-banner {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(6, 95, 70, 0.25) 100%);
+    background: rgba(16, 185, 129, 0.08);
     border: 1px solid rgba(16, 185, 129, 0.4);
-    border-radius: 20px;
-    padding: 1.5rem 2rem;
+    border-top: 3px solid #10b981;
+    border-radius: var(--radius-md);
+    padding: 1.35rem 1.75rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: 1.25rem;
     margin-bottom: 1.5rem;
     flex-wrap: wrap;
 }
 .success-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
+    width: 46px;
+    height: 46px;
+    border-radius: var(--radius-sm);
     background: #10b981;
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     flex-shrink: 0;
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
 }
 .success-text {
     flex: 1;
@@ -853,39 +851,40 @@ textarea:focus,
 }
 .success-text h3 {
     font-family: 'Outfit', sans-serif;
-    font-size: 1.35rem;
+    font-size: 1.25rem;
     color: #34d399;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.2rem;
 }
 .success-text p {
     color: var(--text-gray-300);
-    font-size: 0.95rem;
+    font-size: 0.9rem;
 }
 
 /* EMAIL DELIVERY CONFIRMATION CARD */
 .email-delivery-card {
-    background: linear-gradient(135deg, rgba(30, 58, 138, 0.4) 0%, rgba(15, 23, 42, 0.8) 100%);
-    border: 1px solid rgba(59, 130, 246, 0.4);
-    border-radius: 20px;
-    padding: 1.5rem 2rem;
-    margin-bottom: 2.5rem;
+    background: var(--card-bg);
+    border: var(--card-border);
+    border-top: 3px solid var(--blue-accent);
+    border-radius: var(--radius-md);
+    padding: 1.35rem 1.75rem;
+    margin-bottom: 2.25rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: 1.25rem;
     flex-wrap: wrap;
-    box-shadow: 0 10px 30px -10px rgba(59, 130, 246, 0.25);
+    box-shadow: var(--shadow-md);
 }
 .email-delivery-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 16px;
-    background: rgba(59, 130, 246, 0.2);
-    color: #60a5fa;
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-sm);
+    background: rgba(79, 70, 229, 0.2);
+    color: #818cf8;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
+    font-size: 1.6rem;
     flex-shrink: 0;
 }
 .email-delivery-info {
@@ -894,14 +893,14 @@ textarea:focus,
 }
 .email-delivery-info h4 {
     font-family: 'Outfit', sans-serif;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     color: white;
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.25rem;
 }
 .email-delivery-info p {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     color: var(--text-gray-300);
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.65rem;
 }
 .highlight-email {
     color: #93c5fd;
@@ -909,23 +908,23 @@ textarea:focus,
 }
 .email-badges {
     display: flex;
-    gap: 0.75rem;
+    gap: 0.65rem;
     flex-wrap: wrap;
 }
 
 .diploma-generator-grid {
     display: grid;
     grid-template-columns: 1fr 1.25fr;
-    gap: 2.5rem;
+    gap: 2.25rem;
     align-items: start;
 }
 
 .diploma-form-card {
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-border);
-    border-radius: 24px;
-    padding: 2rem;
+    background: var(--card-bg);
+    border: var(--card-border);
+    border-top: 3px solid var(--gold-primary);
+    border-radius: var(--radius-md);
+    padding: 1.75rem;
 }
 .card-title-row {
     display: flex;
@@ -935,55 +934,60 @@ textarea:focus,
 }
 .diploma-form-card h2 {
     font-family: 'Outfit', sans-serif;
-    font-size: 1.5rem;
+    font-size: 1.35rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     color: var(--text-white);
 }
 .diploma-form-card .subtitle {
     color: var(--text-gray-400);
     font-size: 0.85rem;
-    margin-bottom: 1.75rem;
+    margin-bottom: 1.5rem;
     line-height: 1.5;
 }
 
 .form-actions {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    margin-top: 2rem;
+    gap: 0.85rem;
+    margin-top: 1.75rem;
 }
 
 /* Preview Card */
 .diploma-preview-card {
-    background: var(--navy-800);
-    border: 1px solid var(--glass-border-gold);
-    border-radius: 24px;
-    padding: 1.5rem;
+    background: var(--card-bg);
+    border: var(--card-border);
+    border-top: 3px solid var(--blue-accent);
+    border-radius: var(--radius-md);
+    padding: 1.35rem;
     display: flex;
     flex-direction: column;
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-md);
 }
 
 .preview-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
-    padding: 0 0.5rem;
+    margin-bottom: 0.85rem;
+    padding: 0 0.25rem;
 }
 .preview-header h3 {
     font-family: 'Outfit', sans-serif;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     color: var(--text-white);
 }
 
 .preview-container {
     width: 100%;
     height: 540px;
-    background: #1e293b;
-    border-radius: 16px;
+    background: #0f172a;
+    border-radius: var(--radius-sm);
     overflow: hidden;
     position: relative;
-    border: 1px solid rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .loading-spinner {
@@ -992,20 +996,19 @@ textarea:focus,
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(15, 23, 42, 0.85);
-    backdrop-filter: blur(8px);
+    background: rgba(10, 13, 20, 0.9);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
+    gap: 0.85rem;
     color: var(--gold-light);
     font-weight: 500;
     z-index: 20;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.25s ease;
 }
 .loading-spinner i {
-    font-size: 2.5rem;
+    font-size: 2.2rem;
     color: var(--gold-primary);
 }
 
@@ -1017,14 +1020,14 @@ textarea:focus,
 }
 
 .preview-footer {
-    margin-top: 1rem;
+    margin-top: 0.85rem;
     font-size: 0.75rem;
     color: var(--text-gray-400);
     text-align: center;
 }
 
 /* ==========================================================================
-   MODALES (EMAIL PREVIEW, CONFIG)
+   MODALES (GEOMÉTRICO)
    ========================================================================== */
 .modal-overlay {
     position: fixed;
@@ -1032,8 +1035,7 @@ textarea:focus,
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(8px);
+    background: rgba(0, 0, 0, 0.85);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1050,16 +1052,17 @@ textarea:focus,
 
 .modal-card {
     background: var(--navy-800);
-    border: 1px solid var(--glass-border-gold);
-    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-top: 3px solid var(--gold-primary);
+    border-radius: var(--radius-md);
     width: 100%;
     max-width: 650px;
     max-height: 90vh;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    box-shadow: var(--shadow-lg);
     overflow: hidden;
-    transform: scale(0.95);
+    transform: scale(0.98);
     transition: var(--transition-fast);
 }
 .modal-overlay.active .modal-card {
@@ -1067,27 +1070,27 @@ textarea:focus,
 }
 
 .modal-header {
-    padding: 1.5rem 2rem;
-    border-bottom: 1px solid var(--glass-border);
+    padding: 1.25rem 1.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(10, 13, 20, 0.9);
 }
 .modal-header h3 {
     font-family: 'Outfit', sans-serif;
-    font-size: 1.25rem;
+    font-size: 1.15rem;
     color: var(--gold-light);
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.65rem;
 }
 
 .btn-close-modal {
     background: transparent;
     border: none;
     color: var(--text-gray-400);
-    font-size: 1.75rem;
+    font-size: 1.6rem;
     cursor: pointer;
     line-height: 1;
 }
@@ -1096,34 +1099,38 @@ textarea:focus,
 }
 
 .modal-body {
-    padding: 2rem;
+    padding: 1.75rem;
     overflow-y: auto;
 }
 
 .modal-tabs {
     display: flex;
     gap: 0.5rem;
-    margin-bottom: 1.5rem;
-    border-bottom: 1px solid var(--glass-border);
-    padding-bottom: 0.5rem;
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 0.4rem;
 }
 .tab-btn {
     background: transparent;
     border: none;
     color: var(--text-gray-400);
-    font-weight: 600;
-    padding: 0.6rem 1.25rem;
-    border-radius: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.5rem 1.1rem;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     transition: var(--transition-fast);
 }
 .tab-btn:hover {
     color: var(--text-white);
-    background: var(--glass-bg);
+    background: var(--navy-700);
 }
 .tab-btn.active {
     color: var(--navy-900);
-    background: var(--gold-gradient);
+    background: var(--gold-primary);
 }
 
 .tab-content {
@@ -1134,12 +1141,12 @@ textarea:focus,
 }
 
 .tab-intro {
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     color: var(--text-gray-300);
-    margin-bottom: 1.5rem;
-    background: rgba(255, 255, 255, 0.03);
-    padding: 1rem;
-    border-radius: 12px;
+    margin-bottom: 1.25rem;
+    background: rgba(10, 13, 20, 0.8);
+    padding: 0.85rem;
+    border-radius: var(--radius-sm);
     border-left: 3px solid var(--gold-primary);
 }
 
@@ -1147,7 +1154,7 @@ textarea:focus,
 .simulated-email-box {
     background: #ffffff;
     color: #1e293b;
-    border-radius: 16px;
+    border-radius: var(--radius-sm);
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
     margin-bottom: 1.5rem;
