@@ -212,7 +212,6 @@ function generateCustomLink(event) {
     const title = document.getElementById('admin-course-title').value.trim();
     const duration = document.getElementById('admin-course-duration').value.trim();
     const dates = document.getElementById('admin-course-dates').value.trim();
-    const stripeLink = document.getElementById('admin-stripe-link').value.trim();
 
     // Construir URL limpia con parámetros
     const baseUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
@@ -222,10 +221,6 @@ function generateCustomLink(event) {
         duracion: duration,
         fecha: dates
     });
-
-    if (stripeLink && stripeLink !== '') {
-        params.append('live_link', stripeLink);
-    }
 
     const fullUrl = `${baseUrl}?${params.toString()}`;
 
