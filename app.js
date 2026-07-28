@@ -43,7 +43,7 @@ const AppState = {
         }
     },
     pdfCoords: {
-        coverExample: true,
+        coverExample: false,
         nameY: 320,
         nameSize: 26,
         courseY: 225,
@@ -475,19 +475,6 @@ async function previewDiploma() {
         const fontName = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
         const fontSubtitle = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
         const fontBody = await pdfDoc.embedFont(StandardFonts.Helvetica);
-
-        const coverCheckbox = document.getElementById('cfg-cover-example');
-        const shouldCover = coverCheckbox ? coverCheckbox.checked : AppState.pdfCoords.coverExample;
-
-        if (shouldCover) {
-            firstPage.drawRectangle({
-                x: 60,
-                y: 135,
-                width: width - 120,
-                height: 240,
-                color: rgb(1, 1, 1),
-            });
-        }
 
         const nameY = AppState.pdfCoords.nameY;
         const nameSize = AppState.pdfCoords.nameSize;
