@@ -1,6 +1,8 @@
 import Openpay from 'openpay';
 import { Resend } from 'resend';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import fs from 'fs';
+import path from 'path';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -89,10 +91,11 @@ export default async function handler(req, res) {
 
     const paymentId = chargeResult.id;
 
-    const pdfUrl = `${protocol}://${host}/diploma.pdf`;
-    const pdfResponse = await fetch(pdfUrl);
-    if (!pdfResponse.ok) throw new Error('No se pudo descargar el diploma.pdf base');
-    const existingPdfBytes = await pdfResponse.arrayBuffer();
+    const pdfPath = path.join(process.cwd(), 'diploma.pdf');
+    if (!fs.existsSync(pdfPath)) {
+      throw new Error('No se encontró el archivo plantilla diploma.pdf en el servidor');
+    }
+    const existingPdfBytes = fs.readFileSync(pdfPath);
 
     const pdfDoc = await PDFDocument.load(existingPdfBytes);
     const pages = pdfDoc.getPages();

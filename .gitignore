@@ -15,4 +15,6 @@ yarn-error.log
 .DS_Store
 Thumbs.db
 *.tmp
+scratch/
+*.zip
 

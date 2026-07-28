@@ -791,9 +791,16 @@ function triggerPreviewUpdate() {
 async function previewDiploma() {
     const loader = document.getElementById('preview-loader');
     const iframe = document.getElementById('pdf-iframe');
-    if (loader) loader.style.opacity = '1';
+    if (loader) {
+        loader.style.display = 'flex';
+        loader.style.opacity = '1';
+    }
 
     try {
+        if (typeof PDFLib === 'undefined') {
+            throw new Error('La librería PDF-Lib no se ha cargado. Revisa la conexión a internet.');
+        }
+
         const nameInput = document.getElementById('student-name');
         const titleInput = document.getElementById('course-title-input');
         const durationInput = document.getElementById('course-duration-input');
@@ -804,7 +811,7 @@ async function previewDiploma() {
         const durationText = (durationInput ? durationInput.value : '').trim();
         const dateText = (dateInput ? dateInput.value : '').trim();
 
-        const existingPdfBytes = await fetch('diploma.pdf').then(res => {
+        const existingPdfBytes = await fetch('diploma.pdf?v=' + Date.now()).then(res => {
             if (!res.ok) throw new Error('No se pudo encontrar diploma.pdf en la carpeta del proyecto.');
             return res.arrayBuffer();
         });
