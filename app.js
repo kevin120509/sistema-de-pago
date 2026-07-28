@@ -3,6 +3,13 @@
    Architecture: Simplified 2-View System (Admin Home vs Student Direct Checkout)
    ========================================================================== */
 
+// ==========================================================================
+// CONFIGURACIÓN DE OPENPAY (Reemplaza con tus llaves reales de producción)
+// ==========================================================================
+const OP_MERCHANT_ID = 'TU_MERCHANT_ID_AQUI'; // Ej: mxjq...
+const OP_PUBLIC_KEY = 'TU_PUBLIC_KEY_AQUI';   // Ej: pk_...
+const OP_IS_PRODUCTION = false; // Cambia a true cuando vayas a cobrar de verdad
+
 // Estado global de la aplicación
 const AppState = {
     currentView: 'admin', // 'admin' | 'student'
@@ -57,10 +64,19 @@ const AppState = {
    INICIALIZACIÓN Y ENRUTAMIENTO DE VISTAS
    ========================================================================== */
 document.addEventListener('DOMContentLoaded', () => {
+    initOpenPay();
     initUrlParamsAndRouting();
     initFormFormatters();
     initFormListeners();
 });
+
+function initOpenPay() {
+    if (typeof OpenPay !== 'undefined' && OP_MERCHANT_ID !== 'TU_MERCHANT_ID_AQUI') {
+        OpenPay.setId(OP_MERCHANT_ID);
+        OpenPay.setApiKey(OP_PUBLIC_KEY);
+        OpenPay.setSandboxMode(!OP_IS_PRODUCTION);
+    }
+}
 
 /**
  * Lee la URL: si contiene parámetros (?curso=... o ?titulo=...), activa automáticamente
@@ -415,55 +431,110 @@ function initFormFormatters() {
 function handlePaymentSubmit(event) {
     if(event) event.preventDefault();
 
-    const course = AppState.courses[AppState.selectedCourse];
-    const btnSubmit = document.getElementById('btn-submit-payment');
-    
-    const nameInput = document.getElementById('mp-student-name');
-    const emailInput = document.getElementById('mp-student-email');
-    
-    let studentName = nameInput ? nameInput.value.trim().toUpperCase() : '';
-    let studentEmail = emailInput ? emailInput.value.trim() : '';
-
-    if (!studentName || !studentEmail) {
-        showNotification('Por favor, ingresa el nombre y correo para el diploma.');
+    if (OP_MERCHANT_ID === 'TU_MERCHANT_ID_AQUI') {
+        alert('Falta configurar las llaves de OpenPay en app.js');
         return;
     }
 
-    if (btnSubmit) {
-        btnSubmit.disabled = true;
-        btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Conectando con Mercado Pago...';
+    const course = AppState.courses[AppState.selectedCourse];
+    const btnSubmit = document.getElementById('btn-submit-payment');
+    
+    const nameInput = document.getElementById('op-student-name');
+    const emailInput = document.getElementById('op-student-email');
+    const expiryInput = document.getElementById('op-card-expiry');
+    
+    let studentName = nameInput ? nameInput.value.trim().toUpperCase() : '';
+    let studentEmail = emailInput ? emailInput.value.trim() : '';
+    let expiryVal = expiryInput ? expiryInput.value.trim() : '';
+
+    if (!studentName || !studentEmail || expiryVal.length !== 5) {
+        showNotification('Por favor, llena todos los campos correctamente.');
+        return;
     }
 
-    fetch('/api/create-preference', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            courseType: AppState.selectedCourse,
-            courseTitle: course.title,
-            courseDuration: course.duration,
-            courseDates: course.dates,
-            studentName: studentName,
-            studentEmail: studentEmail
+    const expParts = expiryVal.split('/');
+    
+    if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando Pago Seguro...';
+    }
+
+    // Tokenizar con OpenPay
+    OpenPay.token.create({
+        "card_number": document.getElementById('op-card-number').value.replace(/\s+/g, ''),
+        "holder_name": document.getElementById('op-card-name').value,
+        "expiration_year": expParts[1],
+        "expiration_month": expParts[0],
+        "cvv2": document.getElementById('op-card-cvc').value
+    }, function(response) {
+        // ÉXITO AL TOKENIZAR
+        const tokenId = response.data.id;
+        const deviceSessionId = OpenPay.deviceData.setup("openpay-payment-form");
+
+        // Enviar a nuestro backend
+        fetch('/api/charge', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                tokenId: tokenId,
+                deviceSessionId: deviceSessionId,
+                courseType: AppState.selectedCourse,
+                courseTitle: course.title,
+                courseDuration: course.duration,
+                courseDates: course.dates,
+                studentName: studentName,
+                studentEmail: studentEmail
+            })
         })
-    })
-    .then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-    })
-    .then(data => {
-        if (data && data.init_point) {
-            window.location.href = data.init_point;
-        } else {
-            throw new Error(data.error || 'No se recibió la URL de Mercado Pago');
-        }
-    })
-    .catch(err => {
-        console.warn('Backend Serverless no disponible o error:', err.message);
+        .then(res => res.json().then(data => ({ status: res.status, body: data })))
+        .then(resData => {
+            if (resData.status === 200 && resData.body.success) {
+                // Pago Exitoso
+                if (btnSubmit) {
+                    btnSubmit.innerHTML = '<i class="fa-solid fa-check"></i> ¡Pago Aprobado!';
+                    btnSubmit.style.background = '#10b981';
+                }
+                setTimeout(() => {
+                    document.getElementById('student-step-1').innerHTML = `
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:60vh; text-align:center;">
+                            <i class="fa-solid fa-circle-check" style="font-size:4rem; color:#10b981; margin-bottom:20px;"></i>
+                            <h2 style="color:#10b981;">¡Pago Aprobado Exitosamente!</h2>
+                            <p style="color:#64748b; font-size:1.1rem; max-width: 500px; margin: 0 auto;">Hemos recibido la confirmación de tu pago. Tu Certificado Oficial ha sido generado automáticamente y enviado a <strong>${studentEmail}</strong>.</p>
+                        </div>
+                    `;
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 1000);
+            } else {
+                throw new Error(resData.body.error || 'Error al procesar el cargo');
+            }
+        })
+        .catch(err => {
+            console.error('Error de cobro backend:', err.message);
+            if (btnSubmit) {
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Error al Cobrar';
+                btnSubmit.style.background = '#ef4444';
+                setTimeout(() => {
+                    btnSubmit.innerHTML = '<i class="fa-solid fa-lock"></i> Procesar Pago y Emitir Constancia';
+                    btnSubmit.style.background = '#0ea5e9';
+                }, 3000);
+            }
+            alert(`El pago no pudo procesarse: ${err.message}. Verifica tu tarjeta o intenta con otra.`);
+        });
+
+    }, function(error) {
+        // ERROR AL TOKENIZAR
+        console.error("OpenPay Token Error:", error);
         if (btnSubmit) {
             btnSubmit.disabled = false;
-            btnSubmit.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Error al conectar';
+            btnSubmit.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Tarjeta Inválida';
+            btnSubmit.style.background = '#ef4444';
+            setTimeout(() => {
+                btnSubmit.innerHTML = '<i class="fa-solid fa-lock"></i> Procesar Pago y Emitir Constancia';
+                btnSubmit.style.background = '#0ea5e9';
+            }, 3000);
         }
-        showNotification('Error al crear preferencia de Mercado Pago. Revisa consola.');
+        alert(`Error en la tarjeta: ${error.data.description}`);
     });
 }
 

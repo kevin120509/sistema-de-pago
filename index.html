@@ -12,7 +12,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- FontAwesome / Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- OpenPay Scripts -->
+    <script type="text/javascript" src="https://js.openpay.mx/openpay.v1.min.js"></script>
+    <script type="text/javascript" src="https://js.openpay.mx/openpay-data.v1.min.js"></script>
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="styles.css?v=20260728_1">
@@ -187,45 +190,82 @@
                             </div>
                         </div>
 
-                    </div>
-
-                    <!-- Formulario de Alumno para Mercado Pago -->
+                    <!-- Formulario de Alumno y Pago Seguro con OpenPay -->
                     <div class="checkout-form-wrapper">
                         <div class="form-header">
-                            <h2>Inscripción y Emisión</h2>
+                            <h2>Inscripción y Emisión Segura</h2>
                             <div class="card-icons">
-                                <img src="https://logospng.org/download/mercado-pago/logo-mercado-pago-icon-1024.png" width="30" alt="Mercado Pago" />
+                                <i class="fa-brands fa-cc-visa"></i>
+                                <i class="fa-brands fa-cc-mastercard"></i>
+                                <i class="fa-brands fa-cc-amex"></i>
                             </div>
                         </div>
 
-                        <form id="mercadopago-form" onsubmit="handlePaymentSubmit(event)">
-                            <h4 class="form-section-title"><i class="fa-solid fa-user-graduate"></i> 1. Datos para el Diploma</h4>
-                            <p style="color: #64748b; font-size: 0.9rem; margin-top: -10px; margin-bottom: 20px;">Por favor, ingresa los datos oficiales. Al procesar el pago, el diploma se emitirá y enviará automáticamente a este correo.</p>
-
+                        <form id="openpay-payment-form" onsubmit="handlePaymentSubmit(event)">
+                            <!-- Datos del Diploma -->
+                            <h4 class="form-section-title"><i class="fa-solid fa-user-graduate"></i> 1. Datos para el Diploma Oficial</h4>
                             <div class="form-group">
-                                <label for="mp-student-name">Nombre Completo del Alumno (Como aparecerá en el diploma) <span class="req">*</span></label>
+                                <label for="op-student-name">Nombre Completo del Alumno <span class="req">*</span></label>
                                 <div class="input-with-icon">
                                     <i class="fa-regular fa-user"></i>
-                                    <input type="text" id="mp-student-name" placeholder="Ej. Carlos Eduardo Mendoza Valladares" required style="text-transform: uppercase;">
+                                    <input type="text" id="op-student-name" placeholder="Ej. Carlos Eduardo Mendoza Valladares" required style="text-transform: uppercase;">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="op-student-email">Correo Electrónico para envío <span class="req">*</span></label>
+                                <div class="input-with-icon">
+                                    <i class="fa-regular fa-envelope"></i>
+                                    <input type="email" id="op-student-email" placeholder="alumno@correo.com" required>
+                                </div>
+                            </div>
+
+                            <!-- Datos Bancarios -->
+                            <h4 class="form-section-title" style="margin-top:20px;"><i class="fa-solid fa-credit-card"></i> 2. Pago Seguro (Protegido por BBVA)</h4>
+                            
+                            <div class="form-group">
+                                <label for="op-card-name">Nombre del Titular de la Tarjeta <span class="req">*</span></label>
+                                <div class="input-with-icon">
+                                    <i class="fa-solid fa-signature"></i>
+                                    <input type="text" id="op-card-name" data-openpay-card="holder_name" placeholder="Nombre como aparece en la tarjeta" required>
                                 </div>
                             </div>
 
                             <div class="form-group">
-                                <label for="mp-student-email">Correo Electrónico para envío <span class="req">*</span></label>
+                                <label for="op-card-number">Número de Tarjeta <span class="req">*</span></label>
                                 <div class="input-with-icon">
-                                    <i class="fa-regular fa-envelope"></i>
-                                    <input type="email" id="mp-student-email" placeholder="alumno@correo.com" required>
+                                    <i class="fa-regular fa-credit-card"></i>
+                                    <input type="text" id="op-card-number" data-openpay-card="card_number" placeholder="4242 •••• •••• 4242" maxlength="19" required autocomplete="cc-number">
+                                    <span class="card-type-icon" id="card-brand-icon"><i class="fa-solid fa-credit-card"></i></span>
                                 </div>
                             </div>
 
-                            <button type="submit" class="btn btn-pay" id="btn-submit-payment" style="background: #009ee3; color: white;">
+                            <div class="form-row">
+                                <div class="form-group half">
+                                    <label for="op-card-expiry">Expiración (MM/AA) <span class="req">*</span></label>
+                                    <div class="input-with-icon">
+                                        <i class="fa-regular fa-calendar"></i>
+                                        <input type="text" id="op-card-expiry" placeholder="12/28" maxlength="5" required autocomplete="cc-exp">
+                                        <!-- OpenPay necesita mes y año por separado, lo separaremos por JS antes de tokenizar -->
+                                    </div>
+                                </div>
+                                <div class="form-group half">
+                                    <label for="op-card-cvc">Código de Seguridad (CVV) <span class="req">*</span></label>
+                                    <div class="input-with-icon">
+                                        <i class="fa-solid fa-lock"></i>
+                                        <input type="password" id="op-card-cvc" data-openpay-card="cvv2" placeholder="123" maxlength="4" required autocomplete="cc-csc">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-pay" id="btn-submit-payment" style="background: #0ea5e9;">
                                 <i class="fa-solid fa-lock"></i>
-                                <span id="btn-pay-text">Proceder a Pagar con Mercado Pago</span>
+                                <span id="btn-pay-text">Procesar Pago y Emitir Constancia</span>
                             </button>
                         </form>
 
-                        <div class="security-note" style="justify-content: center;">
-                            <img src="https://http2.mlstatic.com/frontend-assets/ui-navigation/5.19.1/mercadopago/logo__large.png" height="25" alt="Mercado Pago">
+                        <div class="security-note" style="justify-content: center; flex-direction: column; align-items: center; text-align: center; gap: 10px;">
+                            <span style="font-size: 0.8rem;">Pagos procesados de forma encriptada y segura por:</span>
+                            <img src="https://www.openpay.mx/img/logo-openpay.png" height="30" alt="OpenPay by BBVA" style="filter: grayscale(100%) opacity(0.7);">
                         </div>
                         </div>
                     </div>

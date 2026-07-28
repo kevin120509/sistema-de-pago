@@ -7,7 +7,7 @@
     "start": "npx serve ."
   },
   "dependencies": {
-    "mercadopago": "^3.2.1",
+    "openpay": "^1.0.5",
     "pdf-lib": "^1.17.1",
     "resend": "^3.2.0"
   }
