@@ -477,17 +477,21 @@ async function previewDiploma() {
         const fontBody = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
         const nameY = AppState.pdfCoords.nameY;
-        const nameSize = AppState.pdfCoords.nameSize;
-        const nameWidth = fontName.widthOfTextAtSize(studentName, nameSize);
+        let nameSize = AppState.pdfCoords.nameSize || 26;
+        let nameWidth = fontName.widthOfTextAtSize(studentName, nameSize);
+        while (nameWidth > 680 && nameSize > 14) {
+            nameSize -= 1;
+            nameWidth = fontName.widthOfTextAtSize(studentName, nameSize);
+        }
         const nameX = (width - nameWidth) / 2;
 
-        // 1. Cuadro blanco exacto para borrar ÚNICAMENTE el nombre original (y=295, h=52, w=710),
-        // dejando intacto el texto de "DIPLOMA" arriba (y=360) y tapando la línea negra inferior.
+        // 1. Cuadro blanco súper ancho (730px, y=292, h=56) para borrar el 100% de cualquier nombre largo anterior,
+        // respetando la palabra DIPLOMA arriba (y=360) y eliminando las colitas inferiores.
         firstPage.drawRectangle({
-            x: (width - 710) / 2,
-            y: 295,
-            width: 710,
-            height: 52,
+            x: (width - 730) / 2,
+            y: 292,
+            width: 730,
+            height: 56,
             color: rgb(1, 1, 1),
         });
 
@@ -499,20 +503,31 @@ async function previewDiploma() {
             color: rgb(0.1, 0.2, 0.38),
         });
 
-        const courseY = AppState.pdfCoords.courseY;
-        const courseSize = 22;
-        
-        // 2. Cuadro blanco exacto para borrar ÚNICAMENTE el curso y fecha original (y=155, h=92, w=710),
-        // dejando intacto "Por haber concluido..." (y=260) y las firmas abajo (y=140).
+        // 2. Cuadro blanco súper ancho (730px, y=152, h=95) para borrar el 100% del curso anterior y su fecha,
+        // respetando "Por haber concluido..." (y=260) y las firmas inferiores (y=140).
         firstPage.drawRectangle({
-            x: (width - 710) / 2,
-            y: 155,
-            width: 710,
-            height: 92,
+            x: (width - 730) / 2,
+            y: 152,
+            width: 730,
+            height: 95,
             color: rgb(1, 1, 1),
         });
 
-        const lines = wrapText(courseTitle, fontSubtitle, courseSize, width - 180);
+        // Auto-escala dinámica para que títulos de cursos larguísimos se adapten perfectamente
+        let courseSize = 22;
+        let lineSpacing = 28;
+        let lines = wrapText(courseTitle, fontSubtitle, courseSize, width - 160);
+        if (lines.length === 3) {
+            courseSize = 18;
+            lineSpacing = 23;
+            lines = wrapText(courseTitle, fontSubtitle, courseSize, width - 150);
+        } else if (lines.length >= 4) {
+            courseSize = 15;
+            lineSpacing = 19;
+            lines = wrapText(courseTitle, fontSubtitle, courseSize, width - 140);
+        }
+
+        const courseY = AppState.pdfCoords.courseY;
         let currentY = courseY;
         
         lines.forEach(line => {
@@ -524,12 +539,13 @@ async function previewDiploma() {
                 font: fontSubtitle,
                 color: rgb(0, 0, 0),
             });
-            currentY -= 28;
+            currentY -= lineSpacing;
         });
 
-        const datesY = Math.min(currentY - 10, AppState.pdfCoords.datesY);
+        // Ubicación dinámica de la fecha y horas para que mantenga distancia armónica y nunca choque con las firmas
+        const datesY = Math.max(158, Math.min(currentY - 12, AppState.pdfCoords.datesY));
         const fullDateStr = `${durationText}, ${dateText}`;
-        const dateSize = 12.5;
+        const dateSize = 14.5;
         const dateWidth = fontBody.widthOfTextAtSize(fullDateStr, dateSize);
 
         firstPage.drawText(fullDateStr, {
