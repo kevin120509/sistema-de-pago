@@ -114,49 +114,26 @@ function initUrlParamsAndRouting() {
         // Poblar tarjeta de resumen en Paso 1 del alumno
         populateStudentSummary();
 
-        // Si regresó de pagar en Stripe Checkout o Payment Link con éxito -> Ir directo al Paso 2 (Diploma)
-        if (successParam === 'true' || successParam === '1') {
+        // Si regresó de pagar en Mercado Pago con éxito
+        if (successParam === 'true' || successParam === '1' || urlParams.get('collection_status') === 'approved') {
             AppState.payment.completed = true;
-            AppState.payment.txId = txParam || `TX-STRIPE-${Math.floor(100000 + Math.random() * 900000)}`;
-            if (nombreParam) AppState.payment.studentName = decodeURIComponent(nombreParam).toUpperCase();
-            if (correoParam) AppState.payment.studentEmail = decodeURIComponent(correoParam);
-
-            if (txParam && txParam.startsWith('cs_')) {
-                fetch(`/api/verify-session?session_id=${encodeURIComponent(txParam)}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data && data.paid) {
-                            if (data.studentName) AppState.payment.studentName = data.studentName;
-                            if (data.customerEmail) AppState.payment.studentEmail = data.customerEmail;
-                            if (data.paymentIntent) AppState.payment.txId = data.paymentIntent;
-                            if (data.courseTitle) AppState.courses[cType].title = data.courseTitle;
-                            if (data.courseDuration) AppState.courses[cType].duration = data.courseDuration;
-                            if (data.courseDates) AppState.courses[cType].dates = data.courseDates;
-                        }
-                    })
-                    .catch(err => console.log('Sin verificación backend serverless diferida:', err))
-                    .finally(() => {
-                        goToStudentStep(2);
-                        showNotification(`¡Pago oficial en Stripe verificado! Diploma de ${AppState.payment.studentName || 'Alumno'} emitido y enviado por correo.`);
-                    });
-            } else {
-                setTimeout(() => {
-                    goToStudentStep(2);
-                    showNotification(`¡Pago oficial en Stripe verificado! Diploma de ${AppState.payment.studentName || 'Alumno'} emitido.`);
-                }, 300);
-            }
-        } else {
-            // Auto-redirigir a Stripe inmediatamente
+            
             document.getElementById('student-step-1').innerHTML = `
                 <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:60vh; text-align:center;">
-                    <i class="fa-solid fa-circle-notch fa-spin" style="font-size:3rem; color:#6366f1; margin-bottom:20px;"></i>
-                    <h2>Conectando con la Pasarela de Pago Segura...</h2>
-                    <p style="color:#64748b;">Serás redirigido a Stripe en unos segundos para realizar tu pago de forma encriptada.</p>
+                    <i class="fa-solid fa-circle-check" style="font-size:4rem; color:#10b981; margin-bottom:20px;"></i>
+                    <h2 style="color:#10b981;">¡Pago Aprobado Exitosamente!</h2>
+                    <p style="color:#64748b; font-size:1.1rem; max-width: 500px; margin: 0 auto;">Hemos recibido la confirmación de Mercado Pago. Tu Certificado Oficial ha sido generado automáticamente y enviado a tu correo electrónico.</p>
                 </div>
             `;
-            setTimeout(() => {
-                handlePaymentSubmit(new Event('submit'));
-            }, 500);
+        } else if (urlParams.get('pending') === 'true' || urlParams.get('collection_status') === 'pending') {
+            document.getElementById('student-step-1').innerHTML = `
+                <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:60vh; text-align:center;">
+                    <i class="fa-solid fa-clock" style="font-size:4rem; color:#f59e0b; margin-bottom:20px;"></i>
+                    <h2 style="color:#f59e0b;">Pago Pendiente</h2>
+                    <p style="color:#64748b; font-size:1.1rem; max-width: 500px; margin: 0 auto;">Tu pago se está procesando. Una vez acreditado, el sistema enviará tu diploma automáticamente a tu correo.</p>
+                </div>
+            `;
+        }
         }
 
     } else {
@@ -436,54 +413,58 @@ function initFormFormatters() {
 }
 
 function handlePaymentSubmit(event) {
-    event.preventDefault();
+    if(event) event.preventDefault();
 
     const course = AppState.courses[AppState.selectedCourse];
     const btnSubmit = document.getElementById('btn-submit-payment');
+    
+    const nameInput = document.getElementById('mp-student-name');
+    const emailInput = document.getElementById('mp-student-email');
+    
+    let studentName = nameInput ? nameInput.value.trim().toUpperCase() : '';
+    let studentEmail = emailInput ? emailInput.value.trim() : '';
 
-    // A. Opción A: Modo Stripe Checkout Serverless (Vercel API)
-    if (AppState.payment.mode === 'serverless' || AppState.payment.mode === 'live') {
-        if (btnSubmit) {
-            btnSubmit.disabled = true;
-            btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Conectando con Stripe Checkout...';
-        }
-
-        fetch('/api/checkout', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                courseType: AppState.selectedCourse,
-                courseTitle: course.title,
-                courseDuration: course.duration,
-                courseDates: course.dates
-            })
-        })
-        .then(res => {
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            return res.json();
-        })
-        .then(data => {
-            if (data && data.url) {
-                window.location.href = data.url;
-            } else {
-                throw new Error(data.error || 'No se recibió la URL de Stripe Checkout');
-            }
-        })
-        .catch(err => {
-            console.warn('Backend Serverless no disponible o error:', err.message);
-            const liveUrl = AppState.payment.liveLinks[AppState.selectedCourse] || document.getElementById(`cfg-link-${AppState.selectedCourse}`)?.value;
-            if (liveUrl && liveUrl.startsWith('http')) {
-                window.location.href = `${liveUrl}?prefilled_email=${encodeURIComponent(AppState.payment.studentEmail)}`;
-                return;
-            }
-            if (btnSubmit) btnSubmit.disabled = false;
-            runLocalSimulationPayment(btnSubmit, course);
-        });
+    if (!studentName || !studentEmail) {
+        showNotification('Por favor, ingresa el nombre y correo para el diploma.');
         return;
     }
 
-    // B. Modo Simulación Local
-    runLocalSimulationPayment(btnSubmit, course);
+    if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Conectando con Mercado Pago...';
+    }
+
+    fetch('/api/create-preference', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            courseType: AppState.selectedCourse,
+            courseTitle: course.title,
+            courseDuration: course.duration,
+            courseDates: course.dates,
+            studentName: studentName,
+            studentEmail: studentEmail
+        })
+    })
+    .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+    })
+    .then(data => {
+        if (data && data.init_point) {
+            window.location.href = data.init_point;
+        } else {
+            throw new Error(data.error || 'No se recibió la URL de Mercado Pago');
+        }
+    })
+    .catch(err => {
+        console.warn('Backend Serverless no disponible o error:', err.message);
+        if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Error al conectar';
+        }
+        showNotification('Error al crear preferencia de Mercado Pago. Revisa consola.');
+    });
 }
 
 function runLocalSimulationPayment(btnSubmit, course) {

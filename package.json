@@ -7,8 +7,8 @@
     "start": "npx serve ."
   },
   "dependencies": {
+    "mercadopago": "^3.2.1",
     "pdf-lib": "^1.17.1",
-    "resend": "^3.2.0",
-    "stripe": "^14.21.0"
+    "resend": "^3.2.0"
   }
 }

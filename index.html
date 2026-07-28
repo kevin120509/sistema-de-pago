@@ -189,62 +189,44 @@
 
                     </div>
 
-                    <!-- Formulario de Alumno y Pago -->
+                    <!-- Formulario de Alumno para Mercado Pago -->
                     <div class="checkout-form-wrapper">
                         <div class="form-header">
-                            <h2>Inscripción y Pago</h2>
+                            <h2>Inscripción y Emisión</h2>
                             <div class="card-icons">
-                                <i class="fa-brands fa-cc-visa"></i>
-                                <i class="fa-brands fa-cc-mastercard"></i>
-                                <i class="fa-brands fa-cc-amex"></i>
-                                <i class="fa-brands fa-stripe"></i>
+                                <img src="https://logospng.org/download/mercado-pago/logo-mercado-pago-icon-1024.png" width="30" alt="Mercado Pago" />
                             </div>
                         </div>
 
-                        <!-- Indicador de Modo -->
-                        <div class="mode-indicator" id="payment-mode-indicator">
-                            <span class="status-dot green"></span>
-                            <span>Modo Simulación Activo (Prueba con cualquier tarjeta)</span>
-                        </div>
-
-                        <form id="stripe-payment-form" onsubmit="handlePaymentSubmit(event)">
-                            <h4 class="form-section-title"><i class="fa-regular fa-credit-card"></i> 1. Método de Pago (Stripe Elements)</h4>
-
+                        <form id="mercadopago-form" onsubmit="handlePaymentSubmit(event)">
+                            <h4 class="form-section-title"><i class="fa-solid fa-user-graduate"></i> 1. Datos para el Diploma</h4>
+                            <p style="color: #64748b; font-size: 0.9rem; margin-top: -10px; margin-bottom: 20px;">Por favor, ingresa los datos oficiales. Al procesar el pago, el diploma se emitirá y enviará automáticamente a este correo.</p>
 
                             <div class="form-group">
-                                <label for="card-number">Número de Tarjeta</label>
+                                <label for="mp-student-name">Nombre Completo del Alumno (Como aparecerá en el diploma) <span class="req">*</span></label>
                                 <div class="input-with-icon">
-                                    <i class="fa-regular fa-credit-card"></i>
-                                    <input type="text" id="card-number" placeholder="4242 •••• •••• 4242" maxlength="19" required autocomplete="cc-number">
-                                    <span class="card-type-icon" id="card-brand-icon"><i class="fa-solid fa-credit-card"></i></span>
+                                    <i class="fa-regular fa-user"></i>
+                                    <input type="text" id="mp-student-name" placeholder="Ej. Carlos Eduardo Mendoza Valladares" required style="text-transform: uppercase;">
                                 </div>
                             </div>
 
-                            <div class="form-row">
-                                <div class="form-group half">
-                                    <label for="card-expiry">Expiración (MM/AA)</label>
-                                    <div class="input-with-icon">
-                                        <i class="fa-regular fa-calendar"></i>
-                                        <input type="text" id="card-expiry" placeholder="12/28" maxlength="5" required autocomplete="cc-exp">
-                                    </div>
-                                </div>
-                                <div class="form-group half">
-                                    <label for="card-cvc">CVC / CVV</label>
-                                    <div class="input-with-icon">
-                                        <i class="fa-solid fa-lock"></i>
-                                        <input type="password" id="card-cvc" placeholder="342" maxlength="4" required autocomplete="cc-csc">
-                                    </div>
+                            <div class="form-group">
+                                <label for="mp-student-email">Correo Electrónico para envío <span class="req">*</span></label>
+                                <div class="input-with-icon">
+                                    <i class="fa-regular fa-envelope"></i>
+                                    <input type="email" id="mp-student-email" placeholder="alumno@correo.com" required>
                                 </div>
                             </div>
 
-                            <button type="submit" class="btn btn-pay" id="btn-submit-payment">
+                            <button type="submit" class="btn btn-pay" id="btn-submit-payment" style="background: #009ee3; color: white;">
                                 <i class="fa-solid fa-lock"></i>
-                                <span id="btn-pay-text">Proceder a Pagar Constancia Segura</span>
+                                <span id="btn-pay-text">Proceder a Pagar con Mercado Pago</span>
                             </button>
                         </form>
 
-                        <div class="security-note">
-                            <i class="fa-solid fa-shield-halved"></i> Al confirmar, se procesará el cobro e instantáneamente se generará tu constancia original para descarga y envío por correo.
+                        <div class="security-note" style="justify-content: center;">
+                            <img src="https://http2.mlstatic.com/frontend-assets/ui-navigation/5.19.1/mercadopago/logo__large.png" height="25" alt="Mercado Pago">
+                        </div>
                         </div>
                     </div>
                 </div>
