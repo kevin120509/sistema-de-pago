@@ -96,6 +96,12 @@ function initUrlParamsAndRouting() {
             navBadge.style.borderColor = 'rgba(59, 130, 246, 0.4)';
             navBadge.style.color = '#93c5fd';
         }
+        
+        // Ocultar icono de configuración y deshabilitar logo clickeable
+        const btnConfig = document.getElementById('btn-config');
+        if (btnConfig) btnConfig.style.display = 'none';
+        const brand = document.querySelector('.brand');
+        if (brand) brand.style.pointerEvents = 'none';
 
         const cType = (cursoParam && AppState.courses[cursoParam.toLowerCase()]) ? cursoParam.toLowerCase() : 'webinar';
         AppState.selectedCourse = cType;
@@ -159,6 +165,7 @@ function initUrlParamsAndRouting() {
         if (adminSection) adminSection.classList.add('active');
         if (studentSection) studentSection.classList.remove('active');
         updateAdminDefaults();
+        renderLinkHistory();
     }
 }
 
@@ -232,7 +239,72 @@ function generateCustomLink(event) {
         boxEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
+    // Guardar en historial (localStorage)
+    saveLinkToHistory(title, fullUrl);
+
     showNotification('🔗 Enlace de alumno generado exitosamente.');
+}
+
+function saveLinkToHistory(title, url) {
+    let history = [];
+    try {
+        const stored = localStorage.getItem('cecaniLinksHistory');
+        if (stored) history = JSON.parse(stored);
+    } catch (e) {}
+    
+    history.unshift({
+        title: title,
+        url: url,
+        date: new Date().toLocaleString()
+    });
+    
+    // Mantener los últimos 20 enlaces
+    if (history.length > 20) history = history.slice(0, 20);
+    
+    localStorage.setItem('cecaniLinksHistory', JSON.stringify(history));
+    renderLinkHistory();
+}
+
+function renderLinkHistory() {
+    const container = document.getElementById('link-history-container');
+    if (!container) return;
+    
+    let history = [];
+    try {
+        const stored = localStorage.getItem('cecaniLinksHistory');
+        if (stored) history = JSON.parse(stored);
+    } catch (e) {}
+    
+    if (history.length === 0) {
+        container.innerHTML = '<p style="color: #94a3b8; font-size: 0.9rem;">Aún no has generado ningún enlace.</p>';
+        return;
+    }
+    
+    container.innerHTML = history.map((link, index) => `
+        <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 15px;">
+            <div style="overflow: hidden;">
+                <div style="color: #f8fafc; font-weight: 500; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${link.title}</div>
+                <div style="color: #64748b; font-size: 0.8rem; margin-top: 4px;">${link.date}</div>
+            </div>
+            <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                <button class="btn btn-secondary btn-sm" onclick="copyToClipboardText('${link.url}', this)" style="padding: 6px 12px; font-size: 0.8rem;">
+                    <i class="fa-regular fa-copy"></i> Copiar
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function copyToClipboardText(text, btnEl) {
+    navigator.clipboard.writeText(text).then(() => {
+        const origText = btnEl.innerHTML;
+        btnEl.innerHTML = '<i class="fa-solid fa-check"></i> Copiado';
+        btnEl.style.background = '#10b981';
+        setTimeout(() => {
+            btnEl.innerHTML = origText;
+            btnEl.style.background = '';
+        }, 2000);
+    });
 }
 
 function copyToClipboard(inputId, btnEl) {
