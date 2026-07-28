@@ -56,8 +56,8 @@ export default async function handler(req, res) {
           price_data: {
             currency: 'mxn',
             product_data: {
-              name: courseTitle,
-              description: `Constancia/Diplomado oficial CECANI - ${courseDuration}`,
+              name: 'Pago de Constancia para emisión de Certificado',
+              description: courseTitle,
             },
             unit_amount: unitAmount,
           },
@@ -65,8 +65,6 @@ export default async function handler(req, res) {
         },
       ],
       metadata: {
-        studentName: studentName ? studentName.toUpperCase() : '',
-        studentEmail: studentEmail || '',
         courseType: courseType,
         courseTitle: courseTitle,
         courseDuration: courseDuration,

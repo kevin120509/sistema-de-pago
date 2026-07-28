@@ -290,8 +290,7 @@ function goToStudentStep(stepNumber) {
 
     if (stepNumber === 2) {
         populateDiplomaForm();
-        previewDiploma();
-        simulateEmailDelivery();
+        // Esperamos a que el usuario introduzca su nombre y correo para generar el PDF
     }
 }
 
@@ -342,16 +341,6 @@ function handlePaymentSubmit(event) {
 
     const course = AppState.courses[AppState.selectedCourse];
     const btnSubmit = document.getElementById('btn-submit-payment');
-    const holderInput = document.getElementById('card-holder');
-    const emailInput = document.getElementById('billing-email');
-
-    if (holderInput && holderInput.value.trim() !== '') {
-        AppState.payment.studentName = holderInput.value.trim().toUpperCase();
-        course.defaultName = AppState.payment.studentName;
-    }
-    if (emailInput && emailInput.value.trim() !== '') {
-        AppState.payment.studentEmail = emailInput.value.trim();
-    }
 
     // A. Opción A: Modo Stripe Checkout Serverless (Vercel API)
     if (AppState.payment.mode === 'serverless' || AppState.payment.mode === 'live') {
@@ -365,9 +354,7 @@ function handlePaymentSubmit(event) {
                 courseType: AppState.selectedCourse,
                 courseTitle: course.title,
                 courseDuration: course.duration,
-                courseDates: course.dates,
-                studentName: AppState.payment.studentName,
-                studentEmail: AppState.payment.studentEmail
+                courseDates: course.dates
             })
         })
         .then(res => {
@@ -447,9 +434,78 @@ function simulateEmailDelivery() {
     if (simTx) simTx.textContent = AppState.payment.txId || 'TX-9842103';
     if (simPrice) simPrice.textContent = `$${course.price}.00 MXN`;
 
-    setTimeout(() => {
-        showNotification(`📧 Diploma oficial y comprobante enviados a la bandeja de: ${emailStr}`);
-    }, 1200);
+    // Solo se llama después de generar y enviar
+    showNotification(`📧 Diploma oficial y comprobante enviados a la bandeja de: ${emailStr}`);
+}
+
+async function handleGeneratePDF(event) {
+    event.preventDefault();
+    
+    const nameInput = document.getElementById('student-name');
+    const emailInput = document.getElementById('student-email');
+    const btnSend = document.getElementById('btn-send-diploma');
+    
+    if (!nameInput.value || !emailInput.value) {
+        showNotification('Por favor, ingresa tu nombre y correo.');
+        return;
+    }
+    
+    AppState.payment.studentName = nameInput.value.trim().toUpperCase();
+    AppState.payment.studentEmail = emailInput.value.trim();
+    
+    btnSend.disabled = true;
+    btnSend.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando y Enviando...';
+    
+    // 1. Generar la vista previa y el Blob
+    await previewDiploma();
+    
+    // 2. Obtener el Base64 del Blob
+    try {
+        const response = await fetch(AppState.pdfBlobUrl);
+        const blob = await response.blob();
+        
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = async function() {
+            const base64data = reader.result.split(',')[1];
+            
+            // 3. Enviar al backend para despachar correo
+            try {
+                const res = await fetch('/api/send-diploma', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: AppState.payment.txId,
+                        studentName: AppState.payment.studentName,
+                        studentEmail: AppState.payment.studentEmail,
+                        courseTitle: AppState.courses[AppState.selectedCourse].title,
+                        courseDuration: AppState.courses[AppState.selectedCourse].duration,
+                        courseDates: AppState.courses[AppState.selectedCourse].dates,
+                        pdfBase64: base64data
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    btnSend.innerHTML = '<i class="fa-solid fa-check"></i> ¡Enviado exitosamente!';
+                    btnSend.style.background = '#10b981';
+                    simulateEmailDelivery();
+                } else {
+                    throw new Error(data.error || 'Error al enviar');
+                }
+            } catch (err) {
+                console.error(err);
+                btnSend.disabled = false;
+                btnSend.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Reintentar Envío';
+                showNotification('Error al enviar el correo. Revisa la consola.');
+            }
+        }
+    } catch (error) {
+        console.error('Error procesando PDF para envío:', error);
+        btnSend.disabled = false;
+        btnSend.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Reintentar Envío';
+    }
 }
 
 /* ==========================================================================

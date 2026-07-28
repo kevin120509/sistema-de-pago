@@ -205,27 +205,9 @@
                         </div>
 
                         <form id="stripe-payment-form" onsubmit="handlePaymentSubmit(event)">
-                            <h4 class="form-section-title"><i class="fa-regular fa-id-card"></i> 1. Información para tu Diploma y Envío</h4>
-                            
-                            <div class="form-group">
-                                <label for="card-holder">Nombre Completo del Alumno (Como aparecerá en el Diploma) <span class="req">*</span></label>
-                                <div class="input-with-icon">
-                                    <i class="fa-regular fa-user"></i>
-                                    <input type="text" id="card-holder" placeholder="Ej. CARLOS EDUARDO MENDOZA VALLADARES" required autocomplete="name" class="input-highlight">
-                                </div>
-                                <small class="field-help">Se imprimirá automáticamente en mayúsculas y tipografia oficial de CECANI.</small>
-                            </div>
+                            <h4 class="form-section-title"><i class="fa-regular fa-credit-card"></i> 1. Método de Pago (Stripe Elements)</h4>
 
-                            <div class="form-group">
-                                <label for="billing-email">Correo Electrónico (Para envío del PDF y recibo fiscal) <span class="req">*</span></label>
-                                <div class="input-with-icon">
-                                    <i class="fa-regular fa-envelope"></i>
-                                    <input type="email" id="billing-email" placeholder="alumno@correo.com" required autocomplete="email" class="input-highlight">
-                                </div>
-                                <small class="field-help">Aquí te llegará tu diploma oficial en PDF de manera instantánea.</small>
-                            </div>
 
-                            <h4 class="form-section-title" style="margin-top: 1.5rem;"><i class="fa-regular fa-credit-card"></i> 2. Método de Pago (Stripe Elements)</h4>
                             <div class="form-group">
                                 <label for="card-number">Número de Tarjeta</label>
                                 <div class="input-with-icon">
@@ -254,7 +236,7 @@
 
                             <button type="submit" class="btn btn-pay" id="btn-submit-payment">
                                 <i class="fa-solid fa-lock"></i>
-                                <span id="btn-pay-text">Pagar $199 MXN y Emitir Diploma</span>
+                                <span id="btn-pay-text">Proceder a Pagar Constancia Segura</span>
                             </button>
                         </form>
 
@@ -318,6 +300,11 @@
                             </div>
 
                             <div class="form-group">
+                                <label for="student-email">Correo Electrónico para Envío <span class="req">*</span></label>
+                                <input type="email" id="student-email" class="input-lg" placeholder="alumno@correo.com" required>
+                            </div>
+
+                            <div class="form-group">
                                 <label for="course-title-input">Certificación / Curso</label>
                                 <textarea id="course-title-input" rows="2" class="input-md" readonly style="opacity: 0.8;"></textarea>
                             </div>
@@ -334,11 +321,14 @@
                             </div>
 
                             <div class="form-actions">
-                                <button type="button" class="btn btn-secondary" onclick="previewDiploma()">
-                                    <i class="fa-solid fa-arrows-rotate"></i> Actualizar Nombre en Diploma
+                                <button type="submit" class="btn btn-gold btn-lg" id="btn-send-diploma">
+                                    <i class="fa-solid fa-paper-plane"></i> Generar y Enviar a mi Correo
                                 </button>
-                                <button type="button" class="btn btn-gold btn-lg" onclick="downloadDiploma()">
-                                    <i class="fa-solid fa-file-arrow-down"></i> Descargar Diploma PDF
+                                <button type="button" class="btn btn-secondary" onclick="previewDiploma()">
+                                    <i class="fa-solid fa-arrows-rotate"></i> Actualizar Vista Previa
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="downloadDiploma()">
+                                    <i class="fa-solid fa-file-arrow-down"></i> Descargar PDF Directo
                                 </button>
                             </div>
                         </form>
