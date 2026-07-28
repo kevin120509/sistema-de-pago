@@ -150,7 +150,6 @@ function initUrlParamsAndRouting() {
                 </div>
             `;
         }
-        }
 
     } else {
         // VISTA POR DEFECTO: ADMINISTRADOR / CREADOR DE ENLACES
