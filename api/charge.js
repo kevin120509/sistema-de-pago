@@ -9,7 +9,7 @@ export default async function handler(req, res) {
 
   const { OPENPAY_MERCHANT_ID, OPENPAY_PRIVATE_KEY, RESEND_API_KEY, NODE_ENV } = process.env;
 
-  if (!OPENPAY_MERCHANT_ID || !OPENPAY_PRIVATE_KEY || !RESEND_API_KEY) {
+  if (!OPENPAY_MERCHANT_ID || !OPENPAY_PRIVATE_KEY) {
     return res.status(500).json({ error: 'Faltan variables de entorno en el servidor.' });
   }
 
@@ -145,42 +145,50 @@ export default async function handler(req, res) {
     const pdfBytes = await pdfDoc.save();
     const pdfBase64 = Buffer.from(pdfBytes).toString('base64');
 
-    // 3. Enviar correo usando Resend
-    const resend = new Resend(RESEND_API_KEY);
-    const fromEmail = process.env.RESEND_FROM_EMAIL || 'CECANI Latinoamérica <onboarding@resend.dev>';
+    // 3. Enviar correo usando Resend (solo si existe la llave)
+    if (RESEND_API_KEY) {
+      try {
+        const resend = new Resend(RESEND_API_KEY);
+        const fromEmail = process.env.RESEND_FROM_EMAIL || 'CECANI Latinoamérica <onboarding@resend.dev>';
 
-    await resend.emails.send({
-      from: fromEmail,
-      to: studentEmail,
-      subject: `Tu Certificado Oficial CECANI: ${courseTitle}`,
-      html: `
-        <div style="font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 25px; border: 1px solid #e5e7eb; border-radius: 12px; background-color: #ffffff;">
-          <div style="text-align: center; padding-bottom: 20px; border-bottom: 2px solid #6366f1;">
-            <h1 style="color: #1e1b4b; margin: 0; font-size: 24px;">CECANI LATINOAMÉRICA</h1>
-            <p style="color: #6366f1; margin: 5px 0 0 0; font-size: 13px; font-weight: bold; letter-spacing: 1px;">PORTAL DIGITAL DE CERTIFICACIÓN</p>
-          </div>
-          <div style="padding: 20px 0;">
-            <p style="font-size: 16px; color: #1f2937;">¡Hola <strong>${studentName}</strong>!</p>
-            <p style="font-size: 15px; color: #4b5563; line-height: 1.6;">
-              Confirmamos que tu pago en <strong>OpenPay</strong> se ha procesado correctamente. Adjunto a este correo encontrarás tu <strong>Certificado Digital Oficial en formato PDF</strong>.
-            </p>
-            <div style="background-color: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #6366f1; margin: 20px 0;">
-              <ul style="margin: 0; padding-left: 20px; color: #334155; font-size: 14px;">
-                <li><strong>Programa:</strong> ${courseTitle}</li>
-                <li><strong>Acreditación:</strong> ${courseDuration}</li>
-                <li><strong>ID de Pago (OP):</strong> <code style="background: #e2e8f0; padding: 2px 6px;">${paymentId}</code></li>
-              </ul>
+        await resend.emails.send({
+          from: fromEmail,
+          to: studentEmail,
+          subject: `Tu Certificado Oficial CECANI: ${courseTitle}`,
+          html: `
+            <div style="font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 25px; border: 1px solid #e5e7eb; border-radius: 12px; background-color: #ffffff;">
+              <div style="text-align: center; padding-bottom: 20px; border-bottom: 2px solid #6366f1;">
+                <h1 style="color: #1e1b4b; margin: 0; font-size: 24px;">CECANI LATINOAMÉRICA</h1>
+                <p style="color: #6366f1; margin: 5px 0 0 0; font-size: 13px; font-weight: bold; letter-spacing: 1px;">PORTAL DIGITAL DE CERTIFICACIÓN</p>
+              </div>
+              <div style="padding: 20px 0;">
+                <p style="font-size: 16px; color: #1f2937;">¡Hola <strong>${studentName}</strong>!</p>
+                <p style="font-size: 15px; color: #4b5563; line-height: 1.6;">
+                  Confirmamos que tu pago en <strong>OpenPay</strong> se ha procesado correctamente. Adjunto a este correo encontrarás tu <strong>Certificado Digital Oficial en formato PDF</strong>.
+                </p>
+                <div style="background-color: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #6366f1; margin: 20px 0;">
+                  <ul style="margin: 0; padding-left: 20px; color: #334155; font-size: 14px;">
+                    <li><strong>Programa:</strong> ${courseTitle}</li>
+                    <li><strong>Acreditación:</strong> ${courseDuration}</li>
+                    <li><strong>ID de Pago (OP):</strong> <code style="background: #e2e8f0; padding: 2px 6px;">${paymentId}</code></li>
+                  </ul>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      `,
-      attachments: [
-        {
-          filename: `Diploma_CECANI_${studentName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
-          content: pdfBase64
-        }
-      ]
-    });
+          `,
+          attachments: [
+            {
+              filename: `Diploma_CECANI_${studentName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
+              content: pdfBase64
+            }
+          ]
+        });
+      } catch (emailError) {
+        console.error("Error enviando el correo, pero el cobro fue exitoso:", emailError);
+      }
+    } else {
+      console.warn("Falta RESEND_API_KEY. No se pudo enviar el diploma, pero el cobro de OpenPay fue exitoso.");
+    }
 
     console.log(`[OpenPay] Cobro exitoso y PDF enviado a ${studentEmail} para el pago ${paymentId}`);
     
