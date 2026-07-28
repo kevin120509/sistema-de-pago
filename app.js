@@ -18,7 +18,7 @@ const AppState = {
             desc: 'Constancia oficial digital por participación en webinars especializados de actualización y normatividad.',
             duration: '5 horas de capacitación intensiva',
             dates: 'Agosto 2026',
-            defaultName: 'JUAN PÉREZ GARCÍA'
+            defaultName: 'CARLOS EDUARDO MENDOZA VALLADARES'
         },
         ac: {
             id: 'ac',
@@ -28,7 +28,7 @@ const AppState = {
             desc: 'Emisión de Diploma con valor curricular y sello de autenticidad para cursos y diplomados A.C.',
             duration: 'Con 20 horas de duración',
             dates: '1 de Junio al 1 de Julio 2026',
-            defaultName: 'CYNTHIA ANGELICA RODRIGUEZ ESCARCEGA'
+            defaultName: 'CARLOS EDUARDO MENDOZA VALLADARES'
         }
     },
     payment: {
@@ -415,7 +415,7 @@ function populateDiplomaForm() {
 
     if (txEl) txEl.textContent = AppState.payment.txId || 'TX-9842103';
     if (nameInput) {
-        nameInput.value = AppState.payment.studentName || course.defaultName || 'CYNTHIA ANGELICA RODRIGUEZ ESCARCEGA';
+        nameInput.value = AppState.payment.studentName || course.defaultName || 'CARLOS EDUARDO MENDOZA VALLADARES';
     }
     if (titleInput) titleInput.value = course.title;
     if (durationInput) durationInput.value = course.duration;
@@ -455,7 +455,7 @@ async function previewDiploma() {
         const durationInput = document.getElementById('course-duration-input');
         const dateInput = document.getElementById('course-date-input');
 
-        const studentName = (nameInput ? nameInput.value : 'CYNTHIA ANGELICA RODRIGUEZ ESCARCEGA').trim().toUpperCase();
+        const studentName = (nameInput ? nameInput.value : 'CARLOS EDUARDO MENDOZA VALLADARES').trim().toUpperCase();
         const courseTitle = (titleInput ? titleInput.value : '').trim();
         const durationText = (durationInput ? durationInput.value : '').trim();
         const dateText = (dateInput ? dateInput.value : '').trim();
@@ -481,6 +481,16 @@ async function previewDiploma() {
         const nameWidth = fontName.widthOfTextAtSize(studentName, nameSize);
         const nameX = (width - nameWidth) / 2;
 
+        // 1. Cuadro blanco exacto para borrar ÚNICAMENTE el nombre original (y=308, h=38, w=560),
+        // dejando intacto el texto de "DIPLOMA" arriba (y=360) y las líneas laterales.
+        firstPage.drawRectangle({
+            x: (width - 560) / 2,
+            y: 308,
+            width: 560,
+            height: 38,
+            color: rgb(1, 1, 1),
+        });
+
         firstPage.drawText(studentName, {
             x: nameX,
             y: nameY,
@@ -489,20 +499,19 @@ async function previewDiploma() {
             color: rgb(0.1, 0.2, 0.38),
         });
 
-        const introText = 'Por haber concluido satisfactoriamente el';
-        const introSize = 13;
-        const introWidth = fontBody.widthOfTextAtSize(introText, introSize);
-        firstPage.drawText(introText, {
-            x: (width - introWidth) / 2,
-            y: AppState.pdfCoords.courseY + 35,
-            size: introSize,
-            font: fontBody,
-            color: rgb(0.15, 0.15, 0.15),
-        });
-
         const courseY = AppState.pdfCoords.courseY;
         const courseSize = 16;
         
+        // 2. Cuadro blanco exacto para borrar ÚNICAMENTE el curso y fecha original (y=172, h=70, w=620),
+        // dejando intacto "Por haber concluido..." (y=260) y las firmas abajo (y=140).
+        firstPage.drawRectangle({
+            x: (width - 620) / 2,
+            y: 172,
+            width: 620,
+            height: 70,
+            color: rgb(1, 1, 1),
+        });
+
         const lines = wrapText(courseTitle, fontSubtitle, courseSize, width - 180);
         let currentY = courseY;
         
