@@ -204,17 +204,10 @@ function initUrlParamsAndRouting() {
         // Poblar tarjeta de resumen en Paso 1 del alumno
         populateStudentSummary();
 
-        // Si regresó de pagar en Mercado Pago con éxito
+        // Si regresó de pagar con éxito
         if (successParam === 'true' || successParam === '1' || urlParams.get('collection_status') === 'approved') {
             AppState.payment.completed = true;
-            
-            document.getElementById('student-step-1').innerHTML = `
-                <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:60vh; text-align:center;">
-                    <i class="fa-solid fa-circle-check" style="font-size:4rem; color:#10b981; margin-bottom:20px;"></i>
-                    <h2 style="color:#10b981;">¡Pago Aprobado Exitosamente!</h2>
-                    <p style="color:#64748b; font-size:1.1rem; max-width: 500px; margin: 0 auto;">Hemos recibido la confirmación de Mercado Pago. Tu Certificado Oficial ha sido generado automáticamente y enviado a tu correo electrónico.</p>
-                </div>
-            `;
+            goToStudentStep(2);
         } else if (urlParams.get('pending') === 'true' || urlParams.get('collection_status') === 'pending') {
             document.getElementById('student-step-1').innerHTML = `
                 <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:60vh; text-align:center;">
@@ -463,8 +456,8 @@ function goToStudentStep(stepNumber) {
    PASO 1 DEL ALUMNO: PAGO SEGURO Y REGISTRO DE DATOS
    ========================================================================== */
 function initFormFormatters() {
-    const cardInput = document.getElementById('card-number');
-    const expiryInput = document.getElementById('card-expiry');
+    const cardInput = document.getElementById('op-card-number');
+    const expiryInput = document.getElementById('op-card-expiry');
     const brandIcon = document.getElementById('card-brand-icon');
 
     if (cardInput) {
