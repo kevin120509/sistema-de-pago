@@ -268,6 +268,20 @@ function clearLinkHistory() {
     }
 }
 
+function deleteLinkFromHistory(index) {
+    if (confirm('¿Deseas eliminar este enlace del historial?')) {
+        let history = [];
+        try {
+            const stored = localStorage.getItem('cecaniLinksHistory');
+            if (stored) history = JSON.parse(stored);
+        } catch (e) {}
+        
+        history.splice(index, 1);
+        localStorage.setItem('cecaniLinksHistory', JSON.stringify(history));
+        renderLinkHistory();
+    }
+}
+
 function renderLinkHistory() {
     const container = document.getElementById('link-history-container');
     if (!container) return;
@@ -290,8 +304,11 @@ function renderLinkHistory() {
                 <div style="color: #64748b; font-size: 0.8rem; margin-top: 4px;">${link.date}</div>
             </div>
             <div style="display: flex; gap: 8px; flex-shrink: 0;">
-                <button class="btn btn-secondary btn-sm" onclick="copyToClipboardText('${link.url}', this)" style="padding: 6px 12px; font-size: 0.8rem;">
+                <button class="btn btn-secondary btn-sm" onclick="copyToClipboardText('${link.url}', this)" style="padding: 6px 10px; font-size: 0.8rem;">
                     <i class="fa-regular fa-copy"></i> Copiar
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="deleteLinkFromHistory(${index})" style="padding: 6px 10px; font-size: 0.8rem; background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2);">
+                    <i class="fa-solid fa-trash-can"></i>
                 </button>
             </div>
         </div>
