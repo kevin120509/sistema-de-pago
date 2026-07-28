@@ -481,13 +481,13 @@ async function previewDiploma() {
         const nameWidth = fontName.widthOfTextAtSize(studentName, nameSize);
         const nameX = (width - nameWidth) / 2;
 
-        // 1. Cuadro blanco exacto para borrar ÚNICAMENTE el nombre original (y=308, h=38, w=710),
-        // dejando intacto el texto de "DIPLOMA" arriba (y=360) y las líneas laterales.
+        // 1. Cuadro blanco exacto para borrar ÚNICAMENTE el nombre original (y=295, h=52, w=710),
+        // dejando intacto el texto de "DIPLOMA" arriba (y=360) y tapando la línea negra inferior.
         firstPage.drawRectangle({
             x: (width - 710) / 2,
-            y: 308,
+            y: 295,
             width: 710,
-            height: 38,
+            height: 52,
             color: rgb(1, 1, 1),
         });
 
@@ -500,15 +500,15 @@ async function previewDiploma() {
         });
 
         const courseY = AppState.pdfCoords.courseY;
-        const courseSize = 16;
+        const courseSize = 22;
         
-        // 2. Cuadro blanco exacto para borrar ÚNICAMENTE el curso y fecha original (y=172, h=70, w=710),
+        // 2. Cuadro blanco exacto para borrar ÚNICAMENTE el curso y fecha original (y=155, h=92, w=710),
         // dejando intacto "Por haber concluido..." (y=260) y las firmas abajo (y=140).
         firstPage.drawRectangle({
             x: (width - 710) / 2,
-            y: 172,
+            y: 155,
             width: 710,
-            height: 70,
+            height: 92,
             color: rgb(1, 1, 1),
         });
 
@@ -524,7 +524,7 @@ async function previewDiploma() {
                 font: fontSubtitle,
                 color: rgb(0, 0, 0),
             });
-            currentY -= 22;
+            currentY -= 28;
         });
 
         const datesY = Math.min(currentY - 10, AppState.pdfCoords.datesY);
