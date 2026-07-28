@@ -559,10 +559,12 @@ textarea:focus,
 
 .student-subview {
     display: none;
-    animation: fadeIn 0.35s ease forwards;
 }
 .student-subview.active {
-    display: block;
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    animation: fadeIn 0.35s ease forwards;
 }
 
 /* ==========================================================================
