@@ -6,9 +6,9 @@
 // ==========================================================================
 // CONFIGURACIÓN DE OPENPAY (Reemplaza con tus llaves reales de producción)
 // ==========================================================================
-const OP_MERCHANT_ID = 'TU_MERCHANT_ID_AQUI'; // Ej: mxjq...
-const OP_PUBLIC_KEY = 'TU_PUBLIC_KEY_AQUI';   // Ej: pk_...
-const OP_IS_PRODUCTION = false; // Cambia a true cuando vayas a cobrar de verdad
+const OP_MERCHANT_ID = 'mdjtydcvoe2lnonskin6'; 
+const OP_PUBLIC_KEY = 'pk_642a02d812144737b3d7ef0c88705663';   
+const OP_IS_PRODUCTION = true; // Cambia a true cuando vayas a cobrar de verdad
 
 // Estado global de la aplicación
 const AppState = {
