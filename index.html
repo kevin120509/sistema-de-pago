@@ -114,7 +114,12 @@
 
                 <!-- Historial de Enlaces -->
                 <div class="admin-history-box" style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1);">
-                    <h3 style="margin-bottom: 1rem; color: #f8fafc;"><i class="fa-solid fa-list-ul" style="color: #6366f1;"></i> Historial de Enlaces Generados</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="color: #f8fafc; margin: 0;"><i class="fa-solid fa-list-ul" style="color: #6366f1;"></i> Historial de Enlaces Generados</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="clearLinkHistory()" style="font-size: 0.8rem; padding: 6px 12px; background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2);">
+                            <i class="fa-solid fa-trash-can"></i> Limpiar Historial
+                        </button>
+                    </div>
                     <div id="link-history-container" style="display: flex; flex-direction: column; gap: 10px;">
                         <p style="color: #94a3b8; font-size: 0.9rem;">Aún no has generado ningún enlace.</p>
                     </div>

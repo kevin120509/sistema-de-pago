@@ -260,6 +260,14 @@ function saveLinkToHistory(title, url) {
     renderLinkHistory();
 }
 
+function clearLinkHistory() {
+    if (confirm('¿Estás seguro de que deseas eliminar todo el historial de enlaces?')) {
+        localStorage.removeItem('cecaniLinksHistory');
+        renderLinkHistory();
+        showNotification('Historial de enlaces eliminado.');
+    }
+}
+
 function renderLinkHistory() {
     const container = document.getElementById('link-history-container');
     if (!container) return;
