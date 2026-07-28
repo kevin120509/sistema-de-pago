@@ -154,11 +154,14 @@
 
             <!-- PASO 1 DEL ALUMNO: PAGO SEGURO Y REGISTRO DE DATOS -->
             <div id="student-step-1" class="student-subview active">
-                <div class="checkout-container">
+                <form id="openpay-payment-form" onsubmit="handlePaymentSubmit(event)" class="checkout-container">
                     
-                    <!-- Resumen del Curso Preconfigurado -->
-                    <div class="checkout-summary">
-                        <h3>Resumen de Certificación</h3>
+                    <!-- COLUMNA IZQUIERDA: Resumen y Datos de Alumno -->
+                    <div class="left-column" style="display: flex; flex-direction: column; gap: 20px;">
+                        
+                        <!-- Resumen del Curso Preconfigurado -->
+                        <div class="checkout-summary">
+                            <h3>Resumen de Certificación</h3>
                         <div class="summary-card">
                             <div class="summary-header">
                                 <div class="summary-title" id="student-course-title">Webinar de Actualización</div>
@@ -190,19 +193,8 @@
                             </div>
                         </div>
 
-                    <!-- Formulario de Alumno y Pago Seguro con OpenPay -->
-                    <div class="checkout-form-wrapper">
-                        <div class="form-header">
-                            <h2>Inscripción y Emisión Segura</h2>
-                            <div class="card-icons">
-                                <i class="fa-brands fa-cc-visa"></i>
-                                <i class="fa-brands fa-cc-mastercard"></i>
-                                <i class="fa-brands fa-cc-amex"></i>
-                            </div>
-                        </div>
-
-                        <form id="openpay-payment-form" onsubmit="handlePaymentSubmit(event)">
-                            <!-- Datos del Diploma -->
+                        <!-- Formulario de Alumno -->
+                        <div class="checkout-form-wrapper" style="padding: 1.5rem;">
                             <h4 class="form-section-title"><i class="fa-solid fa-user-graduate"></i> 1. Datos para el Diploma Oficial</h4>
                             <div class="form-group">
                                 <label for="op-student-name">Nombre Completo del Alumno <span class="req">*</span></label>
@@ -218,8 +210,22 @@
                                     <input type="email" id="op-student-email" placeholder="alumno@correo.com" required>
                                 </div>
                             </div>
+                        </div>
+                        
+                    </div>
 
-                            <!-- Datos Bancarios -->
+                    <!-- COLUMNA DERECHA: Formulario de Pago con OpenPay -->
+                    <div class="checkout-form-wrapper">
+                        <div class="form-header">
+                            <h2>Inscripción y Emisión Segura</h2>
+                            <div class="card-icons">
+                                <i class="fa-brands fa-cc-visa"></i>
+                                <i class="fa-brands fa-cc-mastercard"></i>
+                                <i class="fa-brands fa-cc-amex"></i>
+                            </div>
+                        </div>
+
+                        <!-- Datos Bancarios -->
                             <h4 class="form-section-title" style="margin-top:20px;"><i class="fa-solid fa-credit-card"></i> 2. Pago Seguro (Protegido por BBVA)</h4>
                             
                             <div class="form-group">
@@ -249,7 +255,7 @@
                                     </div>
                                 </div>
                                 <div class="form-group half">
-                                    <label for="op-card-cvc">Código de Seguridad (CVV) <span class="req">*</span></label>
+                            <label for="op-card-cvc">Código de Seguridad (CVV) <span class="req">*</span></label>
                                     <div class="input-with-icon">
                                         <i class="fa-solid fa-lock"></i>
                                         <input type="password" id="op-card-cvc" data-openpay-card="cvv2" placeholder="123" maxlength="4" required autocomplete="cc-csc">
@@ -261,15 +267,13 @@
                                 <i class="fa-solid fa-lock"></i>
                                 <span id="btn-pay-text">Procesar Pago y Emitir Constancia</span>
                             </button>
-                        </form>
 
                         <div class="security-note" style="justify-content: center; flex-direction: column; align-items: center; text-align: center; gap: 10px;">
                             <span style="font-size: 0.8rem;">Pagos procesados de forma encriptada y segura por:</span>
                             <img src="https://www.openpay.mx/img/logo-openpay.png" height="30" alt="OpenPay by BBVA" style="filter: grayscale(100%) opacity(0.7);">
                         </div>
-                        </div>
                     </div>
-                </div>
+                </form>
             </div>
 
             <!-- PASO 2 DEL ALUMNO: EMISIóN PDF Y ENVÍO A CORREO -->
