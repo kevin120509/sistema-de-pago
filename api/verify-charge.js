@@ -23,51 +23,22 @@ export default async function handler(req, res) {
     }
 
     const {
-      tokenId,
-      deviceSessionId,
-      courseType = 'webinar',
+      transactionId,
       courseTitle = 'Webinar Especializado de Actualización Profesional',
       courseDuration = '5 horas de capacitación intensiva',
       courseDates = 'Agosto 2026',
       studentName = '',
-      studentEmail = '',
-      customPrice = null
+      studentEmail = ''
     } = req.body || {};
 
-    if (!tokenId || !deviceSessionId || !studentName || !studentEmail) {
-        return res.status(400).json({ error: 'Faltan datos obligatorios.' });
+    if (!transactionId) {
+        return res.status(400).json({ error: 'Falta el ID de la transacción.' });
     }
 
-    let unitAmount = 199.00;
-    if (customPrice && !isNaN(customPrice)) {
-      unitAmount = Number(customPrice);
-    } else if (courseType === 'ac') {
-      unitAmount = 299.00;
-    }
-
-    const protocol = req.headers['x-forwarded-proto'] || 'https';
-    const host = req.headers['x-forwarded-host'] || req.headers.host || 'portal-diplomas-two.vercel.app';
-    const redirectUrl = `${protocol}://${host}/?status=3d_secure&curso=${encodeURIComponent(courseType)}&titulo=${encodeURIComponent(courseTitle)}&duracion=${encodeURIComponent(courseDuration)}&fecha=${encodeURIComponent(courseDates)}&nombre=${encodeURIComponent(studentName)}&correo=${encodeURIComponent(studentEmail)}`;
-
-    const chargeRequest = {
-        source_id: tokenId,
-        method: 'card',
-        amount: unitAmount,
-        currency: 'MXN',
-        description: `Constancia/Certificado: ${courseTitle}`,
-        device_session_id: deviceSessionId,
-        use_3d_secure: true,
-        redirect_url: redirectUrl,
-        customer: {
-            name: studentName,
-            email: studentEmail
-        }
-    };
-
+    // 1. Obtener el estado real del cargo desde OpenPay
     const chargeResult = await new Promise((resolve, reject) => {
-        openpay.charges.create(chargeRequest, (error, charge) => {
+        openpay.charges.get(transactionId, (error, charge) => {
             if (error) {
-                console.error("OpenPay Error:", error);
                 reject(error);
             } else {
                 resolve(charge);
@@ -75,21 +46,18 @@ export default async function handler(req, res) {
         });
     });
 
-    if (chargeResult.status === 'charge_pending' && chargeResult.payment_method && chargeResult.payment_method.url) {
-        return res.status(200).json({ 
-            success: true, 
-            status: 'charge_pending',
-            redirect_url: chargeResult.payment_method.url 
+    if (chargeResult.status !== 'completed') {
+        return res.status(400).json({ 
+            error: `El pago no pudo ser completado. Estado actual: ${chargeResult.status}`,
+            status: chargeResult.status
         });
     }
 
-    if (chargeResult.status !== 'completed') {
-        throw new Error(`El pago no pudo ser completado. Estado: ${chargeResult.status}`);
-    }
-
-    const paymentId = chargeResult.id;
-
+    // 2. Generar el PDF
+    const protocol = req.headers['x-forwarded-proto'] || 'https';
+    const host = req.headers['x-forwarded-host'] || req.headers.host || 'portal-diplomas-two.vercel.app';
     const pdfUrl = `${protocol}://${host}/diploma.pdf`;
+    
     const pdfResponse = await fetch(pdfUrl);
     if (!pdfResponse.ok) throw new Error('No se pudo descargar el diploma.pdf base');
     const existingPdfBytes = await pdfResponse.arrayBuffer();
@@ -147,6 +115,7 @@ export default async function handler(req, res) {
     const pdfBytes = await pdfDoc.save();
     const pdfBase64 = Buffer.from(pdfBytes).toString('base64');
 
+    // 3. Enviar correo usando Resend
     if (RESEND_API_KEY) {
       try {
         const resend = new Resend(RESEND_API_KEY);
@@ -165,13 +134,13 @@ export default async function handler(req, res) {
               <div style="padding: 20px 0;">
                 <p style="font-size: 16px; color: #1f2937;">¡Hola <strong>${studentName}</strong>!</p>
                 <p style="font-size: 15px; color: #4b5563; line-height: 1.6;">
-                  Confirmamos que tu pago en <strong>OpenPay</strong> se ha procesado correctamente. Adjunto a este correo encontrarás tu <strong>Certificado Digital Oficial en formato PDF</strong>.
+                  Confirmamos que tu pago en <strong>OpenPay</strong> se ha procesado correctamente tras la verificación bancaria. Adjunto a este correo encontrarás tu <strong>Certificado Digital Oficial en formato PDF</strong>.
                 </p>
                 <div style="background-color: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #6366f1; margin: 20px 0;">
                   <ul style="margin: 0; padding-left: 20px; color: #334155; font-size: 14px;">
                     <li><strong>Programa:</strong> ${courseTitle}</li>
                     <li><strong>Acreditación:</strong> ${courseDuration}</li>
-                    <li><strong>ID de Pago (OP):</strong> <code style="background: #e2e8f0; padding: 2px 6px;">${paymentId}</code></li>
+                    <li><strong>ID de Pago (OP):</strong> <code style="background: #e2e8f0; padding: 2px 6px;">${transactionId}</code></li>
                   </ul>
                 </div>
               </div>
@@ -189,9 +158,16 @@ export default async function handler(req, res) {
       }
     }
 
-    res.status(200).json({ success: true, status: 'completed', paymentId: paymentId });
+    res.status(200).json({ success: true, status: 'completed', paymentId: transactionId });
 
   } catch (error) {
-    res.status(400).json({ error: errorMsg });
+    console.error('Error verificando pago:', error);
+    let errorMsg = 'Error verificando el pago.';
+    if (error.description) {
+        errorMsg = error.description;
+    } else if (error.message) {
+        errorMsg = error.message;
+    }
+    res.status(500).json({ error: errorMsg });
   }
 }

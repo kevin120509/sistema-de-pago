@@ -102,11 +102,86 @@ function initUrlParamsAndRouting() {
     const navBadge = document.getElementById('nav-mode-badge');
 
     // SI HAY PARÁMETROS DE CURSO O RETORNO DE STRIPE -> VISTA ALUMNO (DIRECTO A PAGAR O DIPLOMA)
-    if (cursoParam || tituloParam || successParam === 'true' || successParam === '1') {
+    if (cursoParam) {
+        // VISTA ALUMNO
         AppState.currentView = 'student';
-        
         if (adminSection) adminSection.classList.remove('active');
         if (studentSection) studentSection.classList.add('active');
+
+        // Leer datos de la URL
+        AppState.selectedCourse = cursoParam;
+        AppState.courses[cursoParam] = {
+            title: urlParams.get('titulo') || 'Certificación Especializada',
+            price: cursoParam === 'ac' ? '$299 MXN' : '$199 MXN',
+            duration: urlParams.get('duracion') || 'Valor Curricular',
+            dates: urlParams.get('fecha') || 'Fecha no especificada'
+        };
+
+        populateStudentSummary();
+
+        // 3D Secure Return Logic
+        if (urlParams.get('status') === '3d_secure' && urlParams.get('id')) {
+            const transactionId = urlParams.get('id');
+            const studentName = urlParams.get('nombre') || '';
+            const studentEmail = urlParams.get('correo') || '';
+
+            document.getElementById('student-step-1').innerHTML = `
+                <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:60vh; text-align:center;">
+                    <i class="fa-solid fa-spinner fa-spin" style="font-size:4rem; color:#f59e0b; margin-bottom:20px;"></i>
+                    <h2 style="color:#f59e0b;">Verificando Pago Bancario...</h2>
+                    <p style="color:#64748b; font-size:1.1rem; max-width: 500px; margin: 0 auto;">Estamos confirmando tu transacción con el banco. Por favor no cierres esta ventana.</p>
+                </div>
+            `;
+
+            fetch('/api/verify-charge', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    transactionId: transactionId,
+                    courseTitle: AppState.courses[cursoParam].title,
+                    courseDuration: AppState.courses[cursoParam].duration,
+                    courseDates: AppState.courses[cursoParam].dates,
+                    studentName: studentName,
+                    studentEmail: studentEmail
+                })
+            })
+            .then(res => res.json().then(data => ({ status: res.status, body: data })))
+            .then(resData => {
+                if (resData.status === 200 && resData.body.success) {
+                    document.getElementById('student-step-1').innerHTML = `
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:60vh; text-align:center;">
+                            <i class="fa-solid fa-circle-check" style="font-size:4rem; color:#10b981; margin-bottom:20px;"></i>
+                            <h2 style="color:#10b981;">¡Pago Aprobado Exitosamente!</h2>
+                            <p style="color:#64748b; font-size:1.1rem; max-width: 500px; margin: 0 auto;">Hemos recibido la confirmación de tu banco. Tu Certificado Oficial ha sido generado automáticamente y enviado a <strong>${studentEmail}</strong>.</p>
+                        </div>
+                    `;
+                } else {
+                    throw new Error(resData.body.error || 'Pago denegado por el banco.');
+                }
+            })
+            .catch(err => {
+                document.getElementById('student-step-1').innerHTML = `
+                    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:60vh; text-align:center;">
+                        <i class="fa-solid fa-circle-xmark" style="font-size:4rem; color:#ef4444; margin-bottom:20px;"></i>
+                        <h2 style="color:#ef4444;">Pago Rechazado</h2>
+                        <p style="color:#64748b; font-size:1.1rem; max-width: 500px; margin: 0 auto;">El banco no autorizó la transacción o la sesión caducó. ${err.message}</p>
+                        <button class="btn btn-primary" style="margin-top:20px;" onclick="window.location.href = window.location.pathname + '?curso=${encodeURIComponent(cursoParam)}&titulo=${encodeURIComponent(AppState.courses[cursoParam].title)}&duracion=${encodeURIComponent(AppState.courses[cursoParam].duration)}&fecha=${encodeURIComponent(AppState.courses[cursoParam].dates)}'">Intentar Nuevamente</button>
+                    </div>
+                `;
+            });
+
+        } else if (urlParams.get('status') === 'success' || urlParams.get('collection_status') === 'approved') {
+            AppState.payment.completed = true;
+            document.getElementById('student-step-1').innerHTML = `
+                <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:60vh; text-align:center;">
+                    <i class="fa-solid fa-circle-check" style="font-size:4rem; color:#10b981; margin-bottom:20px;"></i>
+                    <h2 style="color:#10b981;">¡Pago Aprobado Exitosamente!</h2>
+                    <p style="color:#64748b; font-size:1.1rem; max-width: 500px; margin: 0 auto;">Hemos recibido la confirmación de tu pago. Tu Certificado Oficial ha sido generado automáticamente y enviado a tu correo electrónico.</p>
+                </div>
+            `;
+        }
+
+        // Configurar badges y UI
         if (navBadge) {
             navBadge.innerHTML = '<i class="fa-solid fa-user-graduate"></i> Inscripción de Alumno';
             navBadge.style.borderColor = 'rgba(59, 130, 246, 0.4)';
@@ -488,7 +563,16 @@ function handlePaymentSubmit(event) {
         .then(res => res.json().then(data => ({ status: res.status, body: data })))
         .then(resData => {
             if (resData.status === 200 && resData.body.success) {
-                // Pago Exitoso
+                // Caso 3D Secure: Redirigir al banco
+                if (resData.body.status === 'charge_pending' && resData.body.redirect_url) {
+                    if (btnSubmit) {
+                        btnSubmit.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Redirigiendo al Banco...';
+                    }
+                    window.location.href = resData.body.redirect_url;
+                    return;
+                }
+
+                // Pago Exitoso Inmediato
                 if (btnSubmit) {
                     btnSubmit.innerHTML = '<i class="fa-solid fa-check"></i> ¡Pago Aprobado!';
                     btnSubmit.style.background = '#10b981';
