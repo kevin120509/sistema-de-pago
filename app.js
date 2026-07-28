@@ -148,13 +148,18 @@ function initUrlParamsAndRouting() {
             .then(res => res.json().then(data => ({ status: res.status, body: data })))
             .then(resData => {
                 if (resData.status === 200 && resData.body.success) {
-                    document.getElementById('student-step-1').innerHTML = `
-                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:60vh; text-align:center;">
-                            <i class="fa-solid fa-circle-check" style="font-size:4rem; color:#10b981; margin-bottom:20px;"></i>
-                            <h2 style="color:#10b981;">¡Pago Aprobado Exitosamente!</h2>
-                            <p style="color:#64748b; font-size:1.1rem; max-width: 500px; margin: 0 auto;">Hemos recibido la confirmación de tu banco. Tu Certificado Oficial ha sido generado automáticamente y enviado a <strong>${studentEmail}</strong>.</p>
-                        </div>
-                    `;
+                    AppState.payment.completed = true;
+                    AppState.payment.txId = resData.body.paymentId || transactionId;
+                    AppState.payment.studentName = studentName;
+                    AppState.payment.studentEmail = studentEmail;
+                    
+                    const txIdEl = document.getElementById('tx-id');
+                    if (txIdEl) txIdEl.textContent = AppState.payment.txId;
+                    
+                    const emailEl = document.getElementById('display-email');
+                    if (emailEl) emailEl.textContent = studentEmail;
+                    
+                    goToStudentStep(2);
                 } else {
                     throw new Error(resData.body.error || 'Pago denegado por el banco.');
                 }
@@ -172,13 +177,7 @@ function initUrlParamsAndRouting() {
 
         } else if (urlParams.get('status') === 'success' || urlParams.get('collection_status') === 'approved') {
             AppState.payment.completed = true;
-            document.getElementById('student-step-1').innerHTML = `
-                <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:60vh; text-align:center;">
-                    <i class="fa-solid fa-circle-check" style="font-size:4rem; color:#10b981; margin-bottom:20px;"></i>
-                    <h2 style="color:#10b981;">¡Pago Aprobado Exitosamente!</h2>
-                    <p style="color:#64748b; font-size:1.1rem; max-width: 500px; margin: 0 auto;">Hemos recibido la confirmación de tu pago. Tu Certificado Oficial ha sido generado automáticamente y enviado a tu correo electrónico.</p>
-                </div>
-            `;
+            goToStudentStep(2);
         }
 
         // Configurar badges y UI
@@ -456,7 +455,7 @@ function goToStudentStep(stepNumber) {
 
     if (stepNumber === 2) {
         populateDiplomaForm();
-        // Esperamos a que el usuario introduzca su nombre y correo para generar el PDF
+        triggerPreviewUpdate();
     }
 }
 
@@ -578,14 +577,18 @@ function handlePaymentSubmit(event) {
                     btnSubmit.style.background = '#10b981';
                 }
                 setTimeout(() => {
-                    document.getElementById('student-step-1').innerHTML = `
-                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:60vh; text-align:center;">
-                            <i class="fa-solid fa-circle-check" style="font-size:4rem; color:#10b981; margin-bottom:20px;"></i>
-                            <h2 style="color:#10b981;">¡Pago Aprobado Exitosamente!</h2>
-                            <p style="color:#64748b; font-size:1.1rem; max-width: 500px; margin: 0 auto;">Hemos recibido la confirmación de tu pago. Tu Certificado Oficial ha sido generado automáticamente y enviado a <strong>${studentEmail}</strong>.</p>
-                        </div>
-                    `;
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    AppState.payment.completed = true;
+                    AppState.payment.txId = resData.body.paymentId || 'TX-COMPLETADO';
+                    AppState.payment.studentName = studentName;
+                    AppState.payment.studentEmail = studentEmail;
+                    
+                    const txIdEl = document.getElementById('tx-id');
+                    if (txIdEl) txIdEl.textContent = AppState.payment.txId;
+                    
+                    const emailEl = document.getElementById('display-email');
+                    if (emailEl) emailEl.textContent = studentEmail;
+                    
+                    goToStudentStep(2);
                 }, 1000);
             } else {
                 throw new Error(resData.body.error || 'Error al procesar el cargo');
